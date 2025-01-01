@@ -1,0 +1,49 @@
+[tool.poetry]
+name = "bookops-sierra"
+version = "0.1.0"
+description = "Sierra API wrapper"
+authors = ["klinga <klingaroo@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+requests = "^2.32.3"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.4"
+pytest-mock = "^3.14.0"
+pytest-cov = "^6.0.0"
+black = "^24.10.0"
+mypy = "^1.14.1"
+types-requests = "^2.32.0.20241016"
+
+[tool.black]
+line-length = 88
+target-version = ['py312', 'py313']
+include = '\.pyi?$'
+exclude = '''
+(
+    /(
+        \.eggs
+       | \.git
+       | \.hg
+       | \.mypy_cache
+       | \.tox
+       | \.venv
+       | _build
+       | buck-out
+       | build
+       | dist
+    )/
+    | temp.py
+)
+'''
+
+[tool.coverage.run]
+relative_files = true
+source = ["."]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
