@@ -40,6 +40,12 @@ exclude = '''
 )
 '''
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+	"webtest: mark a test hitting live endpoints",
+]
+
 [tool.coverage.run]
 relative_files = true
 source = ["."]
