@@ -59,7 +59,6 @@ class SierraToken:
         self.auth = (client_id, client_secret)
         self.host_url = host_url
         self.api_version = api_version
-        self.base_url = self._get_base_url()
         self.timeout = timeout
 
         if agent is None:
@@ -70,7 +69,8 @@ class SierraToken:
         # make access token request
         self._get_token()
 
-    def _get_base_url(self) -> str:
+    @property
+    def base_url(self) -> str:
         return f"{self.host_url}/iii/sierra-api/{self.api_version}"
 
     def _token_url(self) -> str:
