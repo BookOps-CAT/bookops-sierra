@@ -184,7 +184,7 @@ class TestSierraToken:
         token = SierraToken("my_client_id", "my_client_secret", "sierra_url")
         assert (
             str(token)
-            == "<token: token_string_here, expires_on: 2019-01-01 17:59:59, server_response: {'access_token': 'token_string_here', 'token_type': 'bearer', 'expires_in': 3600}>"
+            == "<token: token_string_here, expires_on: 2019-01-01 17:59:59, server_response: {'access_token': 'token_string_here', 'token_type': 'bearer', 'expires_in': 3600}>"  # noqa: E501
         )
 
 
