@@ -56,3 +56,51 @@ class TestSierraSession:
                 session._bibs_marc_endpoint()
                 == "sierra_url/iii/sierra-api/v6/bibs/marc"
             )
+
+    def test_bibs_metadata_endpoint(self, mock_token):
+        with SierraSession(authorization=mock_token) as session:
+            assert (
+                session._bibs_metadata_endpoint()
+                == "sierra_url/iii/sierra-api/v6/bibs/metadata"
+            )
+
+    def test_bibs_query_endpoint(self, mock_token):
+        with SierraSession(authorization=mock_token) as session:
+            assert (
+                session._bibs_query_endpoint()
+                == "sierra_url/iii/sierra-api/v6/bibs/query"
+            )
+
+    def test_bibs_search_endpoint(self, mock_token):
+        with SierraSession(authorization=mock_token) as session:
+            assert (
+                session._bibs_search_endpoint()
+                == "sierra_url/iii/sierra-api/v6/bibs/search"
+            )
+
+    def test_bib_endpoint(self, mock_token):
+        with SierraSession(authorization=mock_token) as session:
+            assert (
+                session._bib_endpoint("123") == "sierra_url/iii/sierra-api/v6/bibs/123"
+            )
+
+    def test_items_checkouts_endpoint(self, mock_token):
+        with SierraSession(authorization=mock_token) as session:
+            assert (
+                session._items_checkouts_endpoint()
+                == "sierra_url/iii/sierra-api/v6/items/checkouts"
+            )
+
+    def test_items_query_endpoint(self, mock_token):
+        with SierraSession(authorization=mock_token) as session:
+            assert (
+                session._items_query_endpoint()
+                == "sierra_url/iii/sierra-api/v6/items/query"
+            )
+
+    def test_item_endpoint(self, mock_token):
+        with SierraSession(authorization=mock_token) as session:
+            assert (
+                session._item_endpoint("123")
+                == "sierra_url/iii/sierra-api/v6/items/123"
+            )
