@@ -53,6 +53,9 @@ class SierraSession(requests.Session):
                 "`SierraToken` object."
             )
 
+        self._bibs_endpoint = f"{self.authorization.base_url}/bibs/"
+        self._items_endpoint = f"{self.authorization.base_url}/items/"
+
         # set agent for requests
         self.headers.update({"User-Agent": self.authorization.agent})
 
@@ -76,9 +79,6 @@ class SierraSession(requests.Session):
         except BookopsSierraError:
             raise
 
-    def _bibs_endpoint(self) -> str:
-        return f"{self.authorization.base_url}/bibs/"
-
     def _bibs_marc_endpoint(self) -> str:
         return f"{self._bibs_endpoint}marc"
 
@@ -93,9 +93,6 @@ class SierraSession(requests.Session):
 
     def _bib_endpoint(self, sid: Union[str, int]) -> str:
         return f"{self._bibs_endpoint}{sid}"
-
-    def _items_endpoint(self) -> str:
-        return f"{self.authorization.base_url}/items/"
 
     def _items_checkouts_endpoint(self) -> str:
         return f"{self._items_endpoint}checkouts"
