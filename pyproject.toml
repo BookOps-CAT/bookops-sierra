@@ -44,6 +44,7 @@ exclude = '''
 testpaths = ["tests"]
 markers = [
 	"webtest: mark a test hitting live endpoints",
+    "http_code: use to pass returned http code to 'mock_session_response' fixture that mocks 'requests.Session.send' method"
 ]
 
 [tool.coverage.run]
