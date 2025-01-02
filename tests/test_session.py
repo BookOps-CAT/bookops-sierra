@@ -5,7 +5,6 @@ bookops_sierra.session testing
 """
 from contextlib import nullcontext as does_not_raise
 import datetime
-import os
 import pytest
 
 from bookops_sierra import __title__, __version__
@@ -20,7 +19,7 @@ class TestSierraSession:
     """
 
     def test_authorization_invalid_argument(self):
-        err_msg = "Invalid authorization. Argument must be an instance of `SierraToken` object."
+        err_msg = "Invalid authorization. Argument must be an instance of `SierraToken` object."  # noqa:E501
         with pytest.raises(BookopsSierraError) as exc:
             SierraSession("my_token")
         assert err_msg in str(exc.value)
@@ -104,3 +103,65 @@ class TestSierraSession:
                 session._item_endpoint("123")
                 == "sierra_url/iii/sierra-api/v6/items/123"
             )
+
+    def test_fetch_new_token(self, mock_token):
+        with SierraSession(authorization=mock_token) as session:
+            assert session.authorization.is_expired() is False
+            # force stale token
+            session.authorization.expires_on = datetime.datetime.now(
+                datetime.timezone.utc
+            ) - datetime.timedelta(seconds=1)
+            # verify token is expired
+            assert session.authorization.is_expired() is True
+
+            # fetch new one and retests
+            session._fetch_new_token()
+            assert session.authorization.is_expired() is False
+
+    def test_fetch_new_token_exceptions(self, mock_token, mock_timeout):
+        with SierraSession(authorization=mock_token) as session:
+            with pytest.raises(BookopsSierraError):
+                session._fetch_new_token()
+
+    @pytest.mark.parametrize(
+        "arg,expectation",
+        [
+            (12345678, "12345678"),
+            (123456789, "12345678"),
+            ("12345678", "12345678"),
+            ("123456789", "12345678"),
+            ("b12345678", "12345678"),
+            ("b123456789", "12345678"),
+            ("i21234567x", "21234567"),
+            ("i21234567", "21234567"),
+        ],
+    )
+    def test_prep_sierra_number(self, mock_token, arg, expectation):
+        with SierraSession(authorization=mock_token) as session:
+            assert session._prep_sierra_number(arg) == expectation
+
+    @pytest.mark.parametrize(
+        "arg",
+        [12345, 1234567890, "12345", "bl1234567", "a12345678", None],
+    )
+    def test_prep_sierra_number_exceptions(self, mock_token, arg):
+        err_msg = "Invalid Sierra number passed."
+        with SierraSession(authorization=mock_token) as session:
+            with pytest.raises(BookopsSierraError) as exc:
+                session._prep_sierra_number(arg)
+            assert err_msg in str(exc.value)
+
+    @pytest.mark.parametrize(
+        "arg,expectation",
+        [
+            ("12345678", "12345678"),
+            ("12345678,12345679", "12345678,12345679"),
+            ("b12345678a", "12345678"),
+            ("b12345678a,b12345679a", "12345678,12345679"),
+            ("12345678a,12345679a", "12345678,12345679"),
+            (" 12345678, 12345679 ", "12345678,12345679"),
+        ],
+    )
+    def test_prep_sierra_numbers(self, mock_token, arg, expectation):
+        with SierraSession(authorization=mock_token) as session:
+            assert session._prep_sierra_numbers(arg) == expectation

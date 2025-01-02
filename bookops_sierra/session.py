@@ -7,14 +7,13 @@ This module provides a session functionality used for making requests
 to Sierra API
 """
 
-import sys
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Tuple, Union
 
 import requests
 
-from . import __title__, __version__
 from .authorize import SierraToken
 from .errors import BookopsSierraError
+from .query import Query
 
 
 class SierraSession(requests.Session):
@@ -140,14 +139,18 @@ class SierraSession(requests.Session):
 
         if isinstance(sid, int):
             sid = str(sid)
+        elif isinstance(sid, str):
+            sid = sid.strip()
+        else:
+            raise BookopsSierraError(err_msg)
 
         if sid.lower()[0] in ("b", "i"):
-            sid = sid[1:].strip()
+            sid = sid[1:]
         if len(sid) == 8:
             if not sid.isdigit():
                 raise BookopsSierraError(err_msg)
         elif len(sid) == 9:
-            sid = sid[:8].strip()
+            sid = sid[:8]
             if not sid.isdigit():
                 raise BookopsSierraError(err_msg)
         else:
@@ -179,9 +182,34 @@ class SierraSession(requests.Session):
         """
         self.headers.update({"Authorization": f"Bearer {self.authorization.token_str}"})
 
-    def bib_get(self):
-        # GET /bibs/{id}
-        pass
+    def bib_get(
+        self,
+        sid: Union[str, int],
+        fields: Union[str, list] = "id,createdDate,normTitle",
+    ) -> requests.Response:
+        """
+        Retrieves specified fields of a Sierra bib.
+        Uses GET /bibs/{id} endpoint.
+
+        Args:
+            sid:        Sierra bib number
+            fields:     a list or comma delimited string of fields to retrieve
+
+        Returns:
+            requests.Response instance
+        """
+        url = self._bib_endpoint(sid)
+        header = {"Accept": "application/json"}
+        payload = {"fields": fields}
+
+        # prep request
+        req = requests.Request("GET", url, params=payload, headers=header)
+        prepared_request = self.prepare_request(req)
+
+        # send request
+        query = Query(self, prepared_request, timeout=self.timeout)
+
+        return query.response
 
     def bib_get_marc(self):
         # GET /bibs/{id}/marc
