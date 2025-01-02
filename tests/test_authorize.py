@@ -23,6 +23,10 @@ class TestSierraToken:
             ((None, "secret", None), "Missing Sierra authentication argument."),
             ((None, None, "server"), "Missing Sierra authentication argument."),
             (("", "", ""), "Missing Sierra authentication argument."),
+            (
+                ("key", "secret", "server", ""),
+                "Missing Sierra authentication argument.",
+            ),
             (("key", "", ""), "Missing Sierra authentication argument."),
             (("", "secret", ""), "Missing Sierra authentication argument."),
             (("", "", "server"), "Missing Sierra authentication argument."),
@@ -37,9 +41,25 @@ class TestSierraToken:
         token = SierraToken("my_client_id", "my_client_secret", "sierra_url")
         assert token.auth == ("my_client_id", "my_client_secret")
 
-    def test_oauth_server(self, mock_successful_post_token_response):
+    def test_host_url(self, mock_successful_post_token_response):
         token = SierraToken("my_client_id", "my_client_secret", "sierra_url")
         assert token.host_url == "sierra_url"
+
+    def test_api_version_default(self, mock_successful_post_token_response):
+        token = SierraToken("my_client_id", "my_client_secret", "sierra_url")
+        assert token.api_version == "v6"
+
+    def test_api_version_custom(self, mock_successful_post_token_response):
+        token = SierraToken("my_client_id", "my_client_secret", "sierra_url", "v4")
+        assert token.api_version == "v4"
+
+    def test_base_url_default_api_version(self, mock_successful_post_token_response):
+        token = SierraToken("my_client_id", "my_client_secret", "sierra_url")
+        assert token.base_url == "sierra_url/iii/sierra-api/v6"
+
+    def test_base_url_custom_api_version(self, mock_successful_post_token_response):
+        token = SierraToken("my_client_id", "my_client_secret", "sierra_url", "v4")
+        assert token.base_url == "sierra_url/iii/sierra-api/v4"
 
     def test_default_agent(self, mock_successful_post_token_response):
         from bookops_sierra import __title__, __version__

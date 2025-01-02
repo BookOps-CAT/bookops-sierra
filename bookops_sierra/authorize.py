@@ -25,6 +25,7 @@ class SierraToken:
         client_id:      client id
         client_secret:  client secret
         host_url:       host's URL
+        api_version:    version of Sierra API in the following format: 'v6'
         agent:          "User-Agent" parameter to be passed in the request
                         header
         timeout:        how long to wait for server to respond before
@@ -40,6 +41,7 @@ class SierraToken:
         client_id: str,
         client_secret: str,
         host_url: str,
+        api_version: str = "v6",
         agent: Optional[str] = None,
         timeout: Union[int, float, Tuple[int, int], Tuple[float, float], None] = (
             3,
@@ -48,15 +50,16 @@ class SierraToken:
     ):
         """Constructor"""
 
-        for value in (client_id, client_secret, host_url):
-            if not value:
-                raise BookopsSierraError("Missing Sierra authentication argument.")
+        if not all([client_id, client_secret, host_url, api_version]):
+            raise BookopsSierraError("Missing Sierra authentication argument.")
 
         self.token_str = None
         self.expires_on = None
         self.server_response = None
         self.auth = (client_id, client_secret)
         self.host_url = host_url
+        self.api_version = api_version
+        self.base_url = self._get_base_url()
         self.timeout = timeout
 
         if agent is None:
@@ -67,8 +70,11 @@ class SierraToken:
         # make access token request
         self._get_token()
 
+    def _get_base_url(self) -> str:
+        return f"{self.host_url}/iii/sierra-api/{self.api_version}"
+
     def _token_url(self) -> str:
-        return f"{self.host_url}/iii/sierra-api/v6/token"
+        return f"{self.base_url}/token"
 
     def _parse_access_token_string(self, server_response: Dict[str, Any]) -> str:
         """
