@@ -3,19 +3,20 @@
 import datetime
 import os
 import json
+from typing import Generator
 
 import pytest
 import requests
 
 
-from bookops_sierra import SierraToken
+from bookops_sierra import SierraToken, SierraSession
 from bookops_sierra.errors import BookopsSierraError
 
 
 class FakeDate(datetime.datetime):
     @classmethod
-    def now(cls):
-        return cls(2019, 1, 1, 17, 0, 0)
+    def now(cls, tzinfo=datetime.timezone.utc) -> "FakeUtcNow":
+        return cls(2019, 1, 1, 17, 0, 0, tzinfo=datetime.timezone.utc)
 
 
 class MockUnexpectedException:
@@ -122,6 +123,12 @@ def mock_bookopssierraerror(monkeypatch):
 @pytest.fixture
 def mock_datetime_now(monkeypatch):
     monkeypatch.setattr(datetime, "datetime", FakeDate)
+
+
+@pytest.fixture
+def mock_session(mock_token) -> Generator[SierraSession, None, None]:
+    with SierraSession(authorization=mock_token) as session:
+        yield session
 
 
 @pytest.fixture
