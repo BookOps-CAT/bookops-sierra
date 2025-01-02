@@ -118,7 +118,7 @@ class TestSierraToken:
         token = mock_token
         res = {"expires_in": 3600}
         assert token._calculate_expiration_time(res) == datetime.datetime(
-            2019, 1, 1, 17, 0, 0
+            2019, 1, 1, 17, 0, 0, tzinfo=datetime.timezone.utc
         ) + datetime.timedelta(seconds=3599)
 
     @pytest.mark.parametrize(
@@ -164,7 +164,7 @@ class TestSierraToken:
         assert token.server_response.json() == res
         assert token.token_str == "token_string_here"
         assert token.expires_on == datetime.datetime(
-            2019, 1, 1, 17, 0, 0
+            2019, 1, 1, 17, 0, 0, tzinfo=datetime.timezone.utc
         ) + datetime.timedelta(seconds=3599)
 
     def test_is_expired_false(self, mock_token):
