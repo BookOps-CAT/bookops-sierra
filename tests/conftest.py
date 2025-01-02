@@ -13,7 +13,7 @@ from bookops_sierra import SierraToken, SierraSession
 from bookops_sierra.errors import BookopsSierraError
 
 
-class FakeDate(datetime.datetime):
+class FakeUtcNow(datetime.datetime):
     @classmethod
     def now(cls, tzinfo=datetime.timezone.utc) -> "FakeUtcNow":
         return cls(2019, 1, 1, 17, 0, 0, tzinfo=datetime.timezone.utc)
@@ -53,11 +53,6 @@ class MockAuthServerResponseSuccess:
         }
 
 
-# class MockSuccessfulHTTP200SessionResponse:
-#     def __init__(self):
-#         self.status_code = 200
-
-
 class MockAuthServerResponseFailure:
     """Simulates oauth server response to successful token request"""
 
@@ -66,6 +61,14 @@ class MockAuthServerResponseFailure:
 
     def json(self):
         return {"error": "No grant_type specified", "error_description": None}
+
+
+class MockHTTPSessionResponse(requests.Response):
+    def __init__(self, http_code) -> None:
+        self.status_code = http_code
+        self.reason = "'foo'"
+        self.url = "https://foo.bar?query"
+        self._content = b"spam"
 
 
 @pytest.fixture
@@ -90,6 +93,25 @@ def mock_failed_post_token_response(monkeypatch):
 #         return MockSuccessfulHTTP200SessionResponse()
 
 #     monkeypatch.setattr(requests.Session, "get", mock_api_response)
+
+
+@pytest.fixture
+def mock_session_response(request, monkeypatch) -> None:
+    """
+    Use together with `pytest.mark.http_code` decorator to pass
+    specific HTTP code to be returned to simulate various
+    responses from different endpoints
+    """
+    marker = request.node.get_closest_marker("http_code")
+    if marker is None:
+        http_code = 200
+    else:
+        http_code = marker.args[0]
+
+    def mock_api_response(*args, http_code=http_code, **kwargs):
+        return MockHTTPSessionResponse(http_code=http_code)
+
+    monkeypatch.setattr(requests.Session, "send", mock_api_response)
 
 
 @pytest.fixture
@@ -122,7 +144,7 @@ def mock_bookopssierraerror(monkeypatch):
 
 @pytest.fixture
 def mock_datetime_now(monkeypatch):
-    monkeypatch.setattr(datetime, "datetime", FakeDate)
+    monkeypatch.setattr(datetime, "datetime", FakeUtcNow)
 
 
 @pytest.fixture
