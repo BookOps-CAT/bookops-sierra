@@ -87,7 +87,7 @@ class TestSierraToken:
         token = SierraToken("my_client_id", "my_client_secret", "sierra_url")
         assert token._token_url() == "sierra_url/iii/sierra-api/v6/token"
 
-    def test_parse_access_token_string_sucess(self, mock_token):
+    def test_parse_access_token_string_success(self, mock_token):
         token = mock_token
         res = {
             "access_token": "token_string_here",
@@ -173,7 +173,9 @@ class TestSierraToken:
 
     def test_is_expired_true(self, mock_token):
         token = mock_token
-        token.expires_on = datetime.datetime.now() - datetime.timedelta(seconds=1)
+        token.expires_on = datetime.datetime.now(
+            datetime.timezone.utc
+        ) - datetime.timedelta(seconds=1)
         assert token.is_expired() is True
 
     def test_printing_token(

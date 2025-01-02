@@ -101,15 +101,15 @@ class SierraToken:
         indicated in the server's response
 
         Args:
-            server_resopnse:    host_url response in dict format
+            server_response:    host_url response in dict format
 
         Returns:
             expires_on:         datetime object
         """
         try:
-            expires_on = datetime.datetime.now() + datetime.timedelta(
-                seconds=server_response["expires_in"] - 1
-            )
+            expires_on = datetime.datetime.now(
+                datetime.timezone.utc
+            ) + datetime.timedelta(seconds=server_response["expires_in"] - 1)
             return expires_on
         except (KeyError, TypeError):
             raise BookopsSierraError(
@@ -159,7 +159,7 @@ class SierraToken:
         False
 
         """
-        if self.expires_on < datetime.datetime.now():
+        if self.expires_on < datetime.datetime.now(datetime.timezone.utc):
             return True
         else:
             return False
