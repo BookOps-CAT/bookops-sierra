@@ -90,7 +90,8 @@ class SierraToken:
             return server_response["access_token"]
         except (KeyError, TypeError):
             raise BookopsSierraError(
-                "Missing access_token parameter in the authenticating server's response."
+                "Missing access_token parameter in the authenticating server's "
+                "response."
             )
 
     def _calculate_expiration_time(
