@@ -10,3 +10,7 @@ A Sierra API wrapper supporting v6.8 and client credential grant flow of the API
 + [Sierra API documentation](https://techdocs.iii.com/sierraapi/Content/titlePage.htm)
 + [Sierra Developer Network](https://innovative.libguides.com/c.php?g=1181301&p=8637929&preview=a459e4eef162d4da79728b75364a6a8f)
 + [NYPL Test Sierra API version](https://nypl-sierra-test.iii.com/iii/sierra-api/about)
+## Sample Test server bibs & items:
++ b217595996
++ i389995009
++ i389994947
