@@ -146,7 +146,7 @@ class SierraToken:
         except BookopsSierraError:
             raise
         except Exception:
-            raise BookopsSierraError(f"Unexpected error occured: {sys.exc_info()[0]}")
+            raise BookopsSierraError(f"Unexpected error occurred: {sys.exc_info()[0]}")
 
     def is_expired(self):
         """
