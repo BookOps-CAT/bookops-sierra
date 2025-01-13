@@ -140,7 +140,7 @@ class TestSierraToken:
         with pytest.raises(BookopsSierraError):
             SierraToken("my_client_id", "my_client_secret", "sierra_url")
 
-    def test_get_token_connection_error(self, mock_connectionerror):
+    def test_get_token_connection_error(self, mock_connection_error):
         with pytest.raises(BookopsSierraError):
             SierraToken("my_client_id", "my_client_secret", "sierra_url")
 
