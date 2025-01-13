@@ -112,11 +112,12 @@ def mock_session_response(request, monkeypatch) -> None:
         return MockHTTPSessionResponse(http_code=http_code)
 
     monkeypatch.setattr(requests.Session, "send", mock_api_response)
+    monkeypatch.setattr(requests.Session, "get", mock_api_response)
 
 
 @pytest.fixture
 def mock_token(mock_successful_post_token_response):
-    return SierraToken("my_client", "my_secret", "sierra_url")
+    return SierraToken("my_client", "my_secret", "https://sierra_url.org")
 
 
 @pytest.fixture
@@ -156,7 +157,7 @@ def mock_session(mock_token) -> Generator[SierraSession, None, None]:
         yield session
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def live_keys():
     if os.name == "nt":
         fh = os.path.join(os.environ["USERPROFILE"], ".cred/.sierra/sierra-dev.json")
@@ -170,3 +171,15 @@ def live_keys():
     else:
         # Github Actions env variables defined in the repository settings
         pass
+
+
+@pytest.fixture(scope="module")
+def live_session(live_keys):
+    token = SierraToken(
+        client_id=os.environ["SIERRA_CLIENT"],
+        client_secret=os.environ["SIERRA_SECRET"],
+        host_url=os.environ["SIERRA_SERVER"],
+        agent="Tests",
+    )
+    with SierraSession(authorization=token) as session:
+        yield session
