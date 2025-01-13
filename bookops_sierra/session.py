@@ -7,7 +7,7 @@ This module provides a session functionality used for making requests
 to Sierra API
 """
 
-from typing import Tuple, Union
+from typing import Tuple, Union, Optional
 
 import requests
 
@@ -185,7 +185,7 @@ class SierraSession(requests.Session):
     def bib_get(
         self,
         sid: Union[str, int],
-        fields: Union[str, list] = "id,createdDate,normTitle",
+        fields: Optional[Union[str, list]] = None,
     ) -> requests.Response:
         """
         Retrieves specified fields of a Sierra bib.
@@ -211,9 +211,29 @@ class SierraSession(requests.Session):
 
         return query.response
 
-    def bib_get_marc(self):
-        # GET /bibs/{id}/marc
-        pass
+    def bib_get_marc(
+        self, sid: Union[str, int], response_type: str = "application/marc-xml"
+    ) -> requests.Response:
+        """
+        Get MARC data for a single bib.
+        Uses GET /bibs/{id}/marc endpoint.
+        Args:
+            sid:            Sierra bib number
+            response_type:  choice of marc-json, marc-xml, mar-in-json
+
+        Returns:
+            requests.Response instance
+        """
+        url = f"{self._bib_endpoint(sid)}/marc"
+        header = {"Accept": response_type}
+
+        # prep request
+        req = requests.Request("GET", url, headers=header)
+        prepared_request = self.prepare_request(req)
+
+        # send request
+        query = Query(self, prepared_request, timeout=self.timeout)
+        return query.response
 
     def bib_create(self):
         # POST /bibs/

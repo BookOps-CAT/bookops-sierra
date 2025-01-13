@@ -38,70 +38,80 @@ class TestSierraSession:
 
     def test_bibs_endpoint(self, mock_token):
         with SierraSession(authorization=mock_token) as session:
-            assert session._bibs_endpoint == "sierra_url/iii/sierra-api/v6/bibs/"
+            assert (
+                session._bibs_endpoint
+                == "https://sierra_url.org/iii/sierra-api/v6/bibs/"
+            )
 
     def test_items_endpoint(self, mock_token):
         with SierraSession(authorization=mock_token) as session:
-            assert session._items_endpoint == "sierra_url/iii/sierra-api/v6/items/"
+            assert (
+                session._items_endpoint
+                == "https://sierra_url.org/iii/sierra-api/v6/items/"
+            )
 
     def test_bibs_endpoint_custom_api_version(self, mock_token):
         mock_token.api_version = "v4"
         with SierraSession(authorization=mock_token) as session:
-            assert session._bibs_endpoint == "sierra_url/iii/sierra-api/v4/bibs/"
+            assert (
+                session._bibs_endpoint
+                == "https://sierra_url.org/iii/sierra-api/v4/bibs/"
+            )
 
     def test_bibs_marc_endpoint(self, mock_token):
         with SierraSession(authorization=mock_token) as session:
             assert (
                 session._bibs_marc_endpoint()
-                == "sierra_url/iii/sierra-api/v6/bibs/marc"
+                == "https://sierra_url.org/iii/sierra-api/v6/bibs/marc"
             )
 
     def test_bibs_metadata_endpoint(self, mock_token):
         with SierraSession(authorization=mock_token) as session:
             assert (
                 session._bibs_metadata_endpoint()
-                == "sierra_url/iii/sierra-api/v6/bibs/metadata"
+                == "https://sierra_url.org/iii/sierra-api/v6/bibs/metadata"
             )
 
     def test_bibs_query_endpoint(self, mock_token):
         with SierraSession(authorization=mock_token) as session:
             assert (
                 session._bibs_query_endpoint()
-                == "sierra_url/iii/sierra-api/v6/bibs/query"
+                == "https://sierra_url.org/iii/sierra-api/v6/bibs/query"
             )
 
     def test_bibs_search_endpoint(self, mock_token):
         with SierraSession(authorization=mock_token) as session:
             assert (
                 session._bibs_search_endpoint()
-                == "sierra_url/iii/sierra-api/v6/bibs/search"
+                == "https://sierra_url.org/iii/sierra-api/v6/bibs/search"
             )
 
     def test_bib_endpoint(self, mock_token):
         with SierraSession(authorization=mock_token) as session:
             assert (
-                session._bib_endpoint("123") == "sierra_url/iii/sierra-api/v6/bibs/123"
+                session._bib_endpoint("123")
+                == "https://sierra_url.org/iii/sierra-api/v6/bibs/123"
             )
 
     def test_items_checkouts_endpoint(self, mock_token):
         with SierraSession(authorization=mock_token) as session:
             assert (
                 session._items_checkouts_endpoint()
-                == "sierra_url/iii/sierra-api/v6/items/checkouts"
+                == "https://sierra_url.org/iii/sierra-api/v6/items/checkouts"
             )
 
     def test_items_query_endpoint(self, mock_token):
         with SierraSession(authorization=mock_token) as session:
             assert (
                 session._items_query_endpoint()
-                == "sierra_url/iii/sierra-api/v6/items/query"
+                == "https://sierra_url.org/iii/sierra-api/v6/items/query"
             )
 
     def test_item_endpoint(self, mock_token):
         with SierraSession(authorization=mock_token) as session:
             assert (
                 session._item_endpoint("123")
-                == "sierra_url/iii/sierra-api/v6/items/123"
+                == "https://sierra_url.org/iii/sierra-api/v6/items/123"
             )
 
     def test_fetch_new_token(self, mock_token):
@@ -165,3 +175,54 @@ class TestSierraSession:
     def test_prep_sierra_numbers(self, mock_token, arg, expectation):
         with SierraSession(authorization=mock_token) as session:
             assert session._prep_sierra_numbers(arg) == expectation
+
+    @pytest.mark.http_code(200)
+    def test_bib_get_success_default_fields(self, mock_session, mock_session_response):
+        assert mock_session.bib_get("123").status_code == 200
+
+    @pytest.mark.http_code(200)
+    def test_bib_get_marc(self, mock_session, mock_session_response):
+        assert mock_session.bib_get("123").status_code == 200
+
+
+class TestSierraSessionLive:
+    """
+    Test of the live Sierra API service
+    """
+
+    @pytest.mark.webtest
+    def test_bib_get_success_default_fields_live(self, live_session):
+        res = live_session.bib_get("21759599")
+        assert res.status_code == 200
+        assert sorted(list(res.json().keys())) == sorted(
+            [
+                "id",
+                "updatedDate",
+                "createdDate",
+                "deleted",
+                "suppressed",
+                "isbn",
+                "lang",
+                "title",
+                "author",
+                "materialType",
+                "bibLevel",
+                "publishYear",
+                "catalogDate",
+                "country",
+                "callNumber",
+            ]
+        )
+
+    @pytest.mark.webtest
+    def test_bib_get_404_error(self, live_session):
+        with pytest.raises(BookopsSierraError) as exc:
+            live_session.bib_get("123")
+        assert "404 Client Error" in str(exc.value)
+        print(str(exc.value))
+
+    @pytest.mark.webtest
+    def test_bib_get_default_marc_xml(self, live_session):
+        res = live_session.bib_get_marc("21759599")
+        assert res.status_code == 200
+        assert res.headers["Content-Type"] == "application/marc-xml;charset=UTF-8"
