@@ -7,7 +7,7 @@ from typing import Union, TYPE_CHECKING
 import sys
 
 from requests import PreparedRequest
-from requests.exceptions import ConnectionError, HTTPError, Timeout, RetryError
+from requests.exceptions import ConnectionError, HTTPError, Timeout
 
 from .errors import BookopsSierraError
 
@@ -67,7 +67,7 @@ class Query:
                 f"{exc}. Server response: "  # type: ignore
                 f"{self.response.content.decode('utf-8')}"
             )
-        except (Timeout, ConnectionError, RetryError):
+        except (Timeout, ConnectionError):
             raise BookopsSierraError(f"Connection Error: {sys.exc_info()[0]}")
 
         except Exception:
