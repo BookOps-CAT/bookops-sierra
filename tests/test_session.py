@@ -170,6 +170,7 @@ class TestSierraSession:
             ("b12345678a,b12345679a", "12345678,12345679"),
             ("12345678a,12345679a", "12345678,12345679"),
             (" 12345678, 12345679 ", "12345678,12345679"),
+            ("i389995009", "38999500"),
         ],
     )
     def test_prep_sierra_numbers(self, mock_token, arg, expectation):
@@ -178,11 +179,15 @@ class TestSierraSession:
 
     @pytest.mark.http_code(200)
     def test_bib_get_success_default_fields(self, mock_session, mock_session_response):
-        assert mock_session.bib_get("123").status_code == 200
+        assert mock_session.bib_get("12345678").status_code == 200
 
     @pytest.mark.http_code(200)
     def test_bib_get_marc(self, mock_session, mock_session_response):
-        assert mock_session.bib_get("123").status_code == 200
+        assert mock_session.bib_get("123345678").status_code == 200
+
+    @pytest.mark.http_code(200)
+    def test_item_get_success_default_fields(self, mock_session, mock_session_response):
+        assert mock_session.item_get("12345678").status_code == 200
 
 
 class TestSierraSessionLive:
@@ -191,7 +196,7 @@ class TestSierraSessionLive:
     """
 
     @pytest.mark.webtest
-    def test_bib_get_success_default_fields_live(self, live_session):
+    def test_bib_get_success_default_fields(self, live_session):
         res = live_session.bib_get("21759599")
         assert res.status_code == 200
         assert sorted(list(res.json().keys())) == sorted(
@@ -217,12 +222,18 @@ class TestSierraSessionLive:
     @pytest.mark.webtest
     def test_bib_get_404_error(self, live_session):
         with pytest.raises(BookopsSierraError) as exc:
-            live_session.bib_get("123")
+            live_session.bib_get("92345678")
         assert "404 Client Error" in str(exc.value)
         print(str(exc.value))
 
     @pytest.mark.webtest
-    def test_bib_get_default_marc_xml(self, live_session):
+    def test_bib_get_default_response_content_marc_xml(self, live_session):
         res = live_session.bib_get_marc("21759599")
         assert res.status_code == 200
         assert res.headers["Content-Type"] == "application/marc-xml;charset=UTF-8"
+
+    @pytest.mark.webtest
+    def test_item_get_success_default_field(self, live_session):
+        res = live_session.item_get("i389995009")
+        assert res.status_code == 200
+        assert res.json()["barcode"] == "33333440868293"

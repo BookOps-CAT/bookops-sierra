@@ -198,7 +198,8 @@ class SierraSession(requests.Session):
         Returns:
             requests.Response instance
         """
-        url = self._bib_endpoint(sid)
+        prepped_sid = self._prep_sierra_number(sid)
+        url = self._bib_endpoint(prepped_sid)
         header = {"Accept": "application/json"}
         payload = {"fields": fields}
 
@@ -224,7 +225,8 @@ class SierraSession(requests.Session):
         Returns:
             requests.Response instance
         """
-        url = f"{self._bib_endpoint(sid)}/marc"
+        prepped_sid = self._prep_sierra_number(sid)
+        url = f"{self._bib_endpoint(prepped_sid)}/marc"
         header = {"Accept": response_type}
 
         # prep request
@@ -271,8 +273,35 @@ class SierraSession(requests.Session):
         # GET /bibs/search
         pass
 
-    def item_get(self):
-        pass
+    def item_get(
+        self,
+        sid: Union[str, int],
+        fields: Optional[Union[str, list]] = None,
+        response_type: str = "application/json",
+    ):
+        """
+        Get MARC data for a single bib.
+        Uses GET /items/{id}/marc endpoint.
+        Args:
+            sid:            Sierra bib number
+            fields:         a comma-delimited list of fields to retrieve
+            response_type:  choice of marc-json, marc-xml, mar-in-json
+
+        Returns:
+            requests.Response instance
+        """
+        prepped_sid = self._prep_sierra_number(sid)
+        url = f"{self._item_endpoint(prepped_sid)}"
+        header = {"Accept": response_type}
+        payload = {"fields": fields}
+
+        # prep request
+        req = requests.Request("GET", url, params=payload, headers=header)
+        prepared_request = self.prepare_request(req)
+
+        # send request
+        query = Query(self, prepared_request, timeout=self.timeout)
+        return query.response
 
     def item_delete(self):
         # DELETE /items/{id}
