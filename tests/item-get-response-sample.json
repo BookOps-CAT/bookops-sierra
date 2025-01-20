@@ -1,0 +1,20 @@
+{
+    "id": "38999500",
+    "updatedDate": "2024-02-26T14:41:51Z",
+    "createdDate": "2022-02-07T16:42:00Z",
+    "deleted": false,
+    "bibIds": [
+        "21759599"
+    ],
+    "location": {
+        "code": "fta0f",
+        "name": "53rd Street Fiction "
+    },
+    "status": {
+        "code": "-",
+        "display": "AVAILABLE"
+    },
+    "volumes": [],
+    "barcode": "33333440868293",
+    "callNumber": "SCI FI G"
+}
