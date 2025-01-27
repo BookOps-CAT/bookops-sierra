@@ -245,9 +245,46 @@ class SierraSession(requests.Session):
         # DELETE /bibs/{id}
         pass
 
-    def bib_update(self):
-        # PUT /bibs/{id}
-        pass
+    def bib_update(
+        self,
+        sid: Union[str, int],
+        data: Union[str, dict],
+        data_format: str = "application/json",
+        response_type: str = "application/json",
+    ):
+        """
+        Update a Sierra bib. Please note, to avoid loosing data, provide the entire bib
+        with modified elements in the `data` argument.
+        Uses PUT /bibs/{id} endpoint
+
+        Args:
+            sid:            Sierra bibliographic record number
+            data:           data to be updated
+            data_format:    choice of application/json or application/xml
+            response_type:  choice of application/json or application/xml
+
+        Returns:
+            `requests.Response` instance
+        """
+        prepped_sid = self._prep_sierra_number(sid)
+        url = f"{self._bib_endpoint(prepped_sid)}"
+        header = {"Accept": response_type, "content-type": data_format}
+        if isinstance(data, dict):
+            body = json.dumps(data)
+        elif isinstance(data, str) or isinstance(data, bytes):
+            body = data
+        else:
+            raise BookopsSierraError(
+                "Error. Given `data` argument is of a wrong type. Must be a str or dict."
+            )
+
+        # prep request
+        req = requests.Request("PUT", url, data=body, headers=header)
+        prepared_request = self.prepare_request(req)
+
+        # send request
+        query = Query(self, prepared_request, timeout=self.timeout)
+        return query.response
 
     def bibs_get(self):
         # GET /bibs/
@@ -321,7 +358,7 @@ class SierraSession(requests.Session):
             sid:            Sierra bib number
             data:           item record data
             data_format:    choice of application/json or application/xml
-            response_type:  choice of marc-json, marc-xml, mar-in-json
+            response_type:  choice of application/json or application/xml
 
         Returns:
             requests.Response instance

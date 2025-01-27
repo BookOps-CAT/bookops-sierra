@@ -215,6 +215,23 @@ class TestSierraSession:
             in str(exc.value)
         )
 
+    @pytest.mark.http_code(204)
+    def test_bib_update_success_data_as_dict(self, mock_session, mock_session_response):
+        data = {
+            "varFields": [
+                {
+                    "fieldTag": "y",
+                    "marcTag": "901",
+                    "ind1": " ",
+                    "ind2": "1",
+                    "subfields": [
+                        {"tag": "a", "content": "TEST"},
+                    ],
+                },
+            ],
+        }
+        assert mock_session.bib_update("12345678", data=data).status_code == 204
+
 
 class TestSierraSessionLive:
     """
