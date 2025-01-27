@@ -29,8 +29,8 @@ class Query:
         session: SierraSession,
         prepared_request: PreparedRequest,
         timeout: Union[int, float, tuple[int, int], tuple[float, float], None] = (
-            3,
-            3,
+            5,
+            5,
         ),
     ) -> None:
         """Initializes Query object.
