@@ -6,7 +6,7 @@ bookops_sierra.session
 This module provides a session functionality used for making requests
 to Sierra API
 """
-
+import json
 from typing import Tuple, Union, Optional
 
 import requests
@@ -39,8 +39,8 @@ class SierraSession(requests.Session):
         self,
         authorization: SierraToken,
         timeout: Union[int, float, Tuple[int, int], Tuple[float, float], None] = (
-            3,
-            3,
+            5,
+            5,
         ),
     ):
         requests.Session.__init__(self)
@@ -278,7 +278,7 @@ class SierraSession(requests.Session):
         sid: Union[str, int],
         fields: Optional[Union[str, list]] = None,
         response_type: str = "application/json",
-    ):
+    ) -> requests.Response:
         """
         Get MARC data for a single bib.
         Uses GET /items/{id}/marc endpoint.
@@ -307,9 +307,44 @@ class SierraSession(requests.Session):
         # DELETE /items/{id}
         pass
 
-    def item_update(self):
-        # PUT /items/{id}
-        pass
+    def item_update(
+        self,
+        sid: Union[str, int],
+        data: Union[str, dict],
+        data_format: str = "application/json",
+        response_type: str = "application/json",
+    ) -> requests.Response:
+        """
+        Updates an item record.
+        Uses PUT /items/{id} endpoint.
+        Args:
+            sid:            Sierra bib number
+            data:           item record data
+            data_format:    choice of application/json or application/xml
+            response_type:  choice of marc-json, marc-xml, mar-in-json
+
+        Returns:
+            requests.Response instance
+        """
+        prepped_sid = self._prep_sierra_number(sid)
+        url = f"{self._item_endpoint(prepped_sid)}"
+        header = {"Accept": response_type, "content-type": data_format}
+        if isinstance(data, dict):
+            body = json.dumps(data)
+        elif isinstance(data, str):
+            body = data
+        else:
+            raise BookopsSierraError(
+                "Error. Given `data` argument is of a wrong type. Must be a str or dict."
+            )
+
+        # prep request
+        req = requests.Request("PUT", url, data=body, headers=header)
+        prepared_request = self.prepare_request(req)
+
+        # send request
+        query = Query(self, prepared_request, timeout=self.timeout)
+        return query.response
 
     def item_create(self):
         # POST /items/

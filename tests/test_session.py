@@ -5,6 +5,8 @@ bookops_sierra.session testing
 """
 from contextlib import nullcontext as does_not_raise
 import datetime
+import json
+
 import pytest
 
 from bookops_sierra import __title__, __version__
@@ -30,7 +32,7 @@ class TestSierraSession:
 
     def test_default_timeout_parameter(self, mock_token):
         with SierraSession(authorization=mock_token) as session:
-            assert session.timeout == (3, 3)
+            assert session.timeout == (5, 5)
 
     def test_custom_timeout_parameter(self, mock_token):
         with SierraSession(authorization=mock_token, timeout=1.5) as session:
@@ -189,6 +191,30 @@ class TestSierraSession:
     def test_item_get_success_default_fields(self, mock_session, mock_session_response):
         assert mock_session.item_get("12345678").status_code == 200
 
+    @pytest.mark.http_code(204)
+    def test_item_update_success_data_as_dict(
+        self, mock_session, mock_session_response
+    ):
+        assert (
+            mock_session.item_update("12345678", data={"status": "m"}).status_code
+            == 204
+        )
+
+    @pytest.mark.http_code(204)
+    def test_item_update_success_data_as_str(self, mock_session, mock_session_response):
+        assert (
+            mock_session.item_update("12345678", data='{"status": "m"}').status_code
+            == 204
+        )
+
+    def test_item_update_invalid_body_type(self, mock_session):
+        with pytest.raises(BookopsSierraError) as exc:
+            mock_session.item_update("12345678", data=["foo", "bar"])
+        assert (
+            "Error. Given `data` argument is of a wrong type. Must be a str or dict."
+            in str(exc.value)
+        )
+
 
 class TestSierraSessionLive:
     """
@@ -233,7 +259,7 @@ class TestSierraSessionLive:
         assert res.headers["Content-Type"] == "application/marc-xml;charset=UTF-8"
 
     @pytest.mark.webtest
-    def test_item_get_success_default_field(self, live_session):
+    def test_item_get_success_default_fields(self, live_session):
         res = live_session.item_get("i389995009")
         assert res.status_code == 200
         assert res.json()["barcode"] == "33333440868293"
