@@ -87,14 +87,6 @@ def mock_failed_post_token_response(monkeypatch):
     monkeypatch.setattr(requests, "post", mock_oauth_server_response)
 
 
-# @pytest.fixture
-# def mock_successful_session_get_response(monkeypatch):
-#     def mock_api_response(*args, **kwargs):
-#         return MockSuccessfulHTTP200SessionResponse()
-
-#     monkeypatch.setattr(requests.Session, "get", mock_api_response)
-
-
 @pytest.fixture
 def mock_session_response(request, monkeypatch) -> None:
     """
@@ -159,6 +151,8 @@ def mock_session(mock_token) -> Generator[SierraSession, None, None]:
 
 @pytest.fixture(scope="module")
 def live_keys():
+    # the credentials must be for Sierra TEST/TRAINING server
+    # NEVER USE for the production server!
     if os.name == "nt":
         fh = os.path.join(os.environ["USERPROFILE"], ".cred/.sierra/sierra-dev.json")
         with open(fh, "r") as file:
@@ -175,6 +169,7 @@ def live_keys():
 
 @pytest.fixture(scope="module")
 def live_session(live_keys):
+    # live session on the TEST server
     token = SierraToken(
         client_id=os.environ["SIERRA_CLIENT"],
         client_secret=os.environ["SIERRA_SECRET"],
