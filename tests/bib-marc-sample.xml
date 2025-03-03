@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?><marcxml:collection xmlns:marcxml="http://www.loc.gov/MARC21/slim">
+  <marcxml:record>
+    <marcxml:leader>00000cam  2200289 a 4500</marcxml:leader>
+    <marcxml:controlfield tag="001">36165241</marcxml:controlfield>
+    <marcxml:controlfield tag="003">OCoLC</marcxml:controlfield>
+    <marcxml:controlfield tag="005">20000629190338.0</marcxml:controlfield>
+    <marcxml:controlfield tag="008">961230r19971995nyu           000 1 eng  </marcxml:controlfield>
+    <marcxml:datafield tag="100" ind1="1" ind2=" ">
+      <marcxml:subfield code="a">Egan, Greg,</marcxml:subfield>
+      <marcxml:subfield code="d">1961-</marcxml:subfield>
+    </marcxml:datafield>
+    <marcxml:datafield tag="852" ind1="8" ind2=" ">
+      <marcxml:subfield code="h">JFE 98-1085</marcxml:subfield>
+    </marcxml:datafield>
+    <marcxml:datafield tag="650" ind1=" " ind2="0">
+      <marcxml:subfield code="a">Investigative reporting</marcxml:subfield>
+      <marcxml:subfield code="v">Fiction.</marcxml:subfield>
+    </marcxml:datafield>
+    <marcxml:datafield tag="650" ind1=" " ind2="0">
+      <marcxml:subfield code="a">Journalists</marcxml:subfield>
+      <marcxml:subfield code="v">Fiction.</marcxml:subfield>
+    </marcxml:datafield>
+    <marcxml:datafield tag="655" ind1=" " ind2="7">
+      <marcxml:subfield code="a">Science fiction.</marcxml:subfield>
+      <marcxml:subfield code="2">lcgft</marcxml:subfield>
+    </marcxml:datafield>
+    <marcxml:datafield tag="020" ind1=" " ind2=" ">
+      <marcxml:subfield code="a">0061052647</marcxml:subfield>
+    </marcxml:datafield>
+    <marcxml:datafield tag="010" ind1=" " ind2=" ">
+      <marcxml:subfield code="a">96054709 //r972</marcxml:subfield>
+    </marcxml:datafield>
+    <marcxml:datafield tag="035" ind1=" " ind2=" ">
+      <marcxml:subfield code="a">(WaOLN)nyp3192083</marcxml:subfield>
+    </marcxml:datafield>
+    <marcxml:datafield tag="260" ind1=" " ind2=" ">
+      <marcxml:subfield code="a">New York, N.Y. :</marcxml:subfield>
+      <marcxml:subfield code="b">HarperPrism,</marcxml:subfield>
+      <marcxml:subfield code="c">1997.</marcxml:subfield>
+    </marcxml:datafield>
+    <marcxml:datafield tag="852" ind1="8" ind2=" ">
+      <marcxml:subfield code="h">JFE 98-1085</marcxml:subfield>
+    </marcxml:datafield>
+    <marcxml:datafield tag="300" ind1=" " ind2=" ">
+      <marcxml:subfield code="a">342 p. ;</marcxml:subfield>
+      <marcxml:subfield code="c">25 cm.</marcxml:subfield>
+    </marcxml:datafield>
+    <marcxml:datafield tag="245" ind1="1" ind2="0">
+      <marcxml:subfield code="a">Distress :</marcxml:subfield>
+      <marcxml:subfield code="b">a novel /</marcxml:subfield>
+      <marcxml:subfield code="c">by Greg Egan.</marcxml:subfield>
+    </marcxml:datafield>
+    <marcxml:datafield tag="959" ind1=" " ind2=" ">
+      <marcxml:subfield code="a">.b47577174</marcxml:subfield>
+      <marcxml:subfield code="b">03-26-07</marcxml:subfield>
+      <marcxml:subfield code="c">07-25-97</marcxml:subfield>
+    </marcxml:datafield>
+    <marcxml:datafield tag="040" ind1=" " ind2=" ">
+      <marcxml:subfield code="a">DLC</marcxml:subfield>
+      <marcxml:subfield code="c">DLC</marcxml:subfield>
+      <marcxml:subfield code="d">OCL</marcxml:subfield>
+      <marcxml:subfield code="d">NYP</marcxml:subfield>
+      <marcxml:subfield code="d">WaOLN</marcxml:subfield>
+    </marcxml:datafield>
+    <marcxml:datafield tag="049" ind1=" " ind2=" ">
+      <marcxml:subfield code="a">NYPG</marcxml:subfield>
+    </marcxml:datafield>
+    <marcxml:datafield tag="050" ind1="0" ind2="0">
+      <marcxml:subfield code="a">PR9619.3.E35</marcxml:subfield>
+      <marcxml:subfield code="b">D57 1997</marcxml:subfield>
+    </marcxml:datafield>
+    <marcxml:datafield tag="908" ind1="0" ind2="0">
+      <marcxml:subfield code="a">PR9619.3.E35</marcxml:subfield>
+      <marcxml:subfield code="b">D57 1997</marcxml:subfield>
+    </marcxml:datafield>
+    <marcxml:datafield tag="082" ind1="0" ind2="0">
+      <marcxml:subfield code="a">823</marcxml:subfield>
+      <marcxml:subfield code="2">21</marcxml:subfield>
+    </marcxml:datafield>
+    <marcxml:datafield tag="946" ind1=" " ind2=" ">
+      <marcxml:subfield code="a">m</marcxml:subfield>
+    </marcxml:datafield>
+    <marcxml:datafield tag="997" ind1=" " ind2=" ">
+      <marcxml:subfield code="a">hg</marcxml:subfield>
+      <marcxml:subfield code="b">11-16-00</marcxml:subfield>
+      <marcxml:subfield code="c">m</marcxml:subfield>
+      <marcxml:subfield code="d">a</marcxml:subfield>
+      <marcxml:subfield code="e">-</marcxml:subfield>
+      <marcxml:subfield code="f">eng</marcxml:subfield>
+      <marcxml:subfield code="g">nyu</marcxml:subfield>
+      <marcxml:subfield code="h">0</marcxml:subfield>
+    </marcxml:datafield>
+    <marcxml:datafield tag="910" ind1=" " ind2=" ">
+      <marcxml:subfield code="a">RL</marcxml:subfield>
+    </marcxml:datafield>
+  </marcxml:record>
+</marcxml:collection>
