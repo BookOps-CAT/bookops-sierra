@@ -275,7 +275,8 @@ class SierraSession(requests.Session):
             body = data
         else:
             raise BookopsSierraError(
-                "Error. Given `data` argument is of a wrong type. Must be a str or dict."
+                "Error. Given `data` argument is of a wrong type. "
+                "Must be a str or dict."
             )
 
         # prep request
@@ -372,7 +373,8 @@ class SierraSession(requests.Session):
             body = data
         else:
             raise BookopsSierraError(
-                "Error. Given `data` argument is of a wrong type. Must be a str or dict."
+                "Error. Given `data` argument is of a wrong type. "
+                "Must be a str or dict."
             )
 
         # prep request
