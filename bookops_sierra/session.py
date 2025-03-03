@@ -158,7 +158,7 @@ class SierraSession(requests.Session):
 
         return sid
 
-    def _prep_sierra_numbers(self, sids: str) -> str:
+    def _prep_sierra_numbers(self, sids: Union[str, list[str], list[int]]) -> str:
         """
         Verifies or converts passed Sierra bib numbers into a comma separated string.
 
@@ -170,9 +170,14 @@ class SierraSession(requests.Session):
         """
         verified_nos = []
 
-        for bid in sids.split(","):
-            bid = self._prep_sierra_number(bid)
-            verified_nos.append(bid)
+        if isinstance(sids, list):
+            for sid in sids:
+                vsid = self._prep_sierra_number(sid)
+                verified_nos.append(vsid)
+        elif isinstance(sids, str):
+            for sid in sids.split(","):
+                vsid = self._prep_sierra_number(sid)
+                verified_nos.append(vsid)
 
         return ",".join(verified_nos)
 
@@ -393,9 +398,9 @@ class SierraSession(requests.Session):
         # GET /items/{id}/checkouts
         pass
 
-    def items_get(self):
+    def items_get(self, sids):
         # GET /items/
-        pass
+        sids = self._prep_sierra_numbers(sids)
 
     def items_get_checkouts(self):
         # GET /items/checkouts

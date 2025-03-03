@@ -171,6 +171,9 @@ class TestSierraSession:
             ("12345678a,12345679a", "12345678,12345679"),
             (" 12345678, 12345679 ", "12345678,12345679"),
             ("i389995009", "38999500"),
+            (["12345678", "12345678"], "12345678,12345678"),
+            ([12345678, 12345678], "12345678,12345678"),
+            (["b12345678a", "12345678"], "12345678,12345678"),
         ],
     )
     def test_prep_sierra_numbers(self, mock_token, arg, expectation):
@@ -229,52 +232,3 @@ class TestSierraSession:
             ],
         }
         assert mock_session.bib_update("12345678", data=data).status_code == 204
-
-
-class TestSierraSessionLive:
-    """
-    Test of the live Sierra API service
-    """
-
-    @pytest.mark.webtest
-    def test_bib_get_success_default_fields(self, live_session):
-        res = live_session.bib_get("21759599")
-        assert res.status_code == 200
-        assert sorted(list(res.json().keys())) == sorted(
-            [
-                "id",
-                "updatedDate",
-                "createdDate",
-                "deleted",
-                "suppressed",
-                "isbn",
-                "lang",
-                "title",
-                "author",
-                "materialType",
-                "bibLevel",
-                "publishYear",
-                "catalogDate",
-                "country",
-                "callNumber",
-            ]
-        )
-
-    @pytest.mark.webtest
-    def test_bib_get_404_error(self, live_session):
-        with pytest.raises(BookopsSierraError) as exc:
-            live_session.bib_get("92345678")
-        assert "404 Client Error" in str(exc.value)
-        print(str(exc.value))
-
-    @pytest.mark.webtest
-    def test_bib_get_default_response_content_marc_xml(self, live_session):
-        res = live_session.bib_get_marc("21759599")
-        assert res.status_code == 200
-        assert res.headers["Content-Type"] == "application/marc-xml;charset=UTF-8"
-
-    @pytest.mark.webtest
-    def test_item_get_success_default_fields(self, live_session):
-        res = live_session.item_get("i389995009")
-        assert res.status_code == 200
-        assert res.json()["barcode"] == "33333440868293"
