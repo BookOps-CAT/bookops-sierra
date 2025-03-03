@@ -102,28 +102,26 @@ class SierraSession(requests.Session):
     def _item_endpoint(self, sid: Union[str, int]) -> str:
         return f"{self._items_endpoint}{sid}"
 
-    # def _prep_multi_keywords(
-    #     self, keywords: Union[str, List[str], List[int], None]
-    # ) -> Optional[str]:
-    #     """
-    #     Verifies or converts passed keywords into a comma separated string.
+    def _prep_multi_keywords(
+        self, keywords: Union[str, list[str], None]
+    ) -> Optional[str]:
+        """
+        Verifies or converts passed keywords into a comma separated string.
 
-    #     Args:
-    #         keywords:       a comma separated string of keywords or a list
-    #                         of strings or integers
+        Args:
+            keywords:       a comma separated string of keywords or a list
+                            of strings or integers
 
-    #     Returns:
-    #         keywords:       a comma separated string of keywords
-    #     """
-    #     if isinstance(keywords, str):
-    #         keywords = keywords.strip()
-    #     elif isinstance(keywords, int):
-    #         keywords = str(keywords)
-    #     elif isinstance(keywords, list):
-    #         keywords = ",".join([str(k) for k in keywords])
-    #     if not keywords:
-    #         return None
-    #     return keywords
+        Returns:
+            keywords:       a comma separated string of keywords
+        """
+        if isinstance(keywords, str):
+            keywords = keywords.strip()
+        elif isinstance(keywords, list):
+            keywords = ",".join([str(k) for k in keywords])
+        if not keywords:
+            return None
+        return keywords
 
     def _prep_sierra_number(self, sid: Union[str, int]) -> str:
         """
@@ -398,9 +396,73 @@ class SierraSession(requests.Session):
         # GET /items/{id}/checkouts
         pass
 
-    def items_get(self, sids):
-        # GET /items/
-        sids = self._prep_sierra_numbers(sids)
+    def items_get(
+        self,
+        sids: Union[str, list[str], list[int]] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+        fields: Optional[Union[str, list[str]]] = None,
+        createdDate: Optional[str] = None,
+        updatedDate: Optional[str] = None,
+        deletedDate: Optional[str] = None,
+        deleted: Optional[bool] = False,
+        bibIds: Optional[Union[str, list[str], list[int]]] = None,
+        status: Optional[str] = None,
+        duedate: Optional[str] = None,
+        suppressed: Optional[str] = None,
+        locations: Optioanl[str] = None,
+    ):
+        """
+        Retrieves a list of Sierra items of given item numbers.
+        Uses GET /items/ endpoint.
+
+        Args:
+            sids:           Sierra item numbers as a comma separated string, or
+                            list of string or integers.
+            limit:          maximum number of results
+            offset:         the beginning record (zero-indexed) of the result set
+            fields:         a list or comma delimited string of fields to retrieve
+            createdDate:    the creation date of items to retrieve (can be a range)
+            updatedDate:    the modification date of times to retrieve (can be a range)
+            deletedDate:    the deletion date of items to retrieve (can be a range)
+            deleted:        retrieve only deleted (true) or non-deleted items (false)
+            bibIds:         list of bib IDs for which to retrieve associated items
+            status:         the status code of items to retrieve
+            duedate:        the due date of items to retrieve
+            suppressed:     the suppressed flag value of items to retrieve
+            locations:      a list of location codes (can include a single
+                            wildcard * to represent one or more final characters)
+
+        Returns:
+            requests.Response instance
+        """
+        prepped_sids = self._prep_sierra_numbers(sids)
+        url = self._items_endpoint
+        header = {"Accept": "application/json"}
+        payload = {
+            "id": prepped_sids,
+            "limit": limit,
+            "offset": offset,
+            "fields": fields,
+            "createdDate": createdDate,
+            "updateDate": updatedDate,
+            "deletedDate": deletedDate,
+            "deleted": deleted,
+            "bibIds": bibIds,
+            "status": status,
+            "duedate": duedate,
+            "suppressed": suppressed,
+            "locations": locations,
+        }
+
+        # prep request
+        req = requests.Request("GET", url, params=payload, headers=header)
+        prepared_request = self.prepare_request(req)
+
+        # send request
+        query = Query(self, prepared_request, timeout=self.timeout)
+
+        return query.response
 
     def items_get_checkouts(self):
         # GET /items/checkouts
