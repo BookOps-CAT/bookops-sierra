@@ -322,7 +322,7 @@ class SierraSession(requests.Session):
     ) -> requests.Response:
         """
         Get MARC data for a single bib.
-        Uses GET /items/{id}/marc endpoint.
+        Uses GET /items/{id} endpoint.
         Args:
             sid:            Sierra bib number
             fields:         a comma-delimited list of fields to retrieve
