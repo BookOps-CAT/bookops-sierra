@@ -156,7 +156,7 @@ class SierraSession(requests.Session):
 
         return sid
 
-    def _prep_sierra_numbers(self, sids: Union[str, list[str], list[int]]) -> str:
+    def _prep_sierra_numbers(self, sids: Union[str, list[str], list[int], None]) -> str:
         """
         Verifies or converts passed Sierra bib numbers into a comma separated string.
 
@@ -398,7 +398,7 @@ class SierraSession(requests.Session):
 
     def items_get(
         self,
-        sids: Union[str, list[str], list[int]] = None,
+        sids: Union[str, list[str], list[int], None] = None,
         limit: Optional[int] = None,
         offset: Optional[int] = None,
         fields: Optional[Union[str, list[str]]] = None,

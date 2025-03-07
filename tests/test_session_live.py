@@ -1,4 +1,3 @@
-import xml.etree.ElementTree as ET
 import pytest
 
 from bookops_sierra.errors import BookopsSierraError

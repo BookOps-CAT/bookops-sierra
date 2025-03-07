@@ -3,7 +3,6 @@
 """
 bookops_sierra.session testing
 """
-from contextlib import nullcontext as does_not_raise
 import datetime
 import pytest
 
