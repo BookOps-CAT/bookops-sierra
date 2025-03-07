@@ -232,3 +232,15 @@ class TestSierraSession:
             ],
         }
         assert mock_session.bib_update("12345678", data=data).status_code == 204
+
+    @pytest.mark.http_code(200)
+    def test_items_get_sids_as_str(self, mock_session, mock_session_response):
+        assert mock_session.items_get(sids="12345678,12345679").status_code == 200
+
+    @pytest.mark.http_code(200)
+    def test_items_get_sids_as_list_of_str(self, mock_session, mock_session_response):
+        assert mock_session.items_get(sids=["12345678", "12345679"]).status_code == 200
+
+    @pytest.mark.http_code(200)
+    def test_items_get_sids_as_list_of_int(self, mock_session, mock_session_response):
+        assert mock_session.items_get(sids=[12345678, 12345679]).status_code == 200

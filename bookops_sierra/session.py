@@ -410,7 +410,8 @@ class SierraSession(requests.Session):
         status: Optional[str] = None,
         duedate: Optional[str] = None,
         suppressed: Optional[str] = None,
-        locations: Optioanl[str] = None,
+        locations: Optional[str] = None,
+        response_type="application/json",
     ):
         """
         Retrieves a list of Sierra items of given item numbers.
@@ -432,13 +433,14 @@ class SierraSession(requests.Session):
             suppressed:     the suppressed flag value of items to retrieve
             locations:      a list of location codes (can include a single
                             wildcard * to represent one or more final characters)
+            response_type:  response content format, application/json or application/xml
 
         Returns:
             requests.Response instance
         """
         prepped_sids = self._prep_sierra_numbers(sids)
         url = self._items_endpoint
-        header = {"Accept": "application/json"}
+        header = {"Accept": response_type}
         payload = {
             "id": prepped_sids,
             "limit": limit,
