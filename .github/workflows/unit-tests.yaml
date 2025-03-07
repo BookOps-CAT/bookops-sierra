@@ -1,0 +1,53 @@
+name: tests
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+        matrix:
+            python-version: ["3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Bootstrap poetry
+        run: pipx install poetry
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version}}
+
+      - name: Install dependencies
+        run: poetry install
+
+      - name: Run black formatting
+        run: poetry run black . --check --color --verbose
+
+      - name: Run flake8 linting
+        run: poetry run flake8 -v --max-line-length=88 --ignore=tests/*:E501,W503
+
+      - name: Run tests
+        run: poetry run pytest -v -m "not webtest" --cov=bookops_sierra/
+
+      - name: Send report to Coveralls
+        uses: AndreMiras/coveralls-python-action@develop
+        with:
+          parallel: true
+          flag-name: Unit Test
+          github-token: ${{ secrets.GITHUB_TOKEN}}
+
+  coveralls_finish:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Coveralls Finished
+        uses: AndreMiras/coveralls-python-action@develop
+        with:
+          parallel-finished: true
