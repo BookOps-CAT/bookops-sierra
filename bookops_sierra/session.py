@@ -24,7 +24,9 @@ class SierraSession(requests.Session):
     Args:
         authorization:          authorization in form of the `SierraToken` instance
         timeout:                how long to wait for server to send data before
-                                giving up; default value is 3 seconds
+                                giving up; default value is 5 seconds
+        delay:                  wait time between requests in the session in seconds,
+                                default 2 seconds
     Example:
 
     >>> from bookops_sierra import SierraSession
@@ -42,6 +44,7 @@ class SierraSession(requests.Session):
             5,
             5,
         ),
+        delay: Optional[int] = 2,
     ):
         requests.Session.__init__(self)
 
@@ -60,6 +63,13 @@ class SierraSession(requests.Session):
 
         # set timeout
         self.timeout = timeout
+
+        # set delay between responses
+        if not isinstance(delay, int) and delay is not None:
+            raise BookopsSierraError(
+                "Invalid type for argument 'delay'. Must be an integer."
+            )
+        self.delay = delay
 
         # set session wide response content type
         self.headers.update({"Accept": "application/json"})
@@ -103,7 +113,7 @@ class SierraSession(requests.Session):
         return f"{self._items_endpoint}{sid}"
 
     def _prep_multi_keywords(
-        self, keywords: Union[str, list[str], None]
+        self, keywords: Union[str, list[str], list[int], None]
     ) -> Optional[str]:
         """
         Verifies or converts passed keywords into a comma separated string.
@@ -117,8 +127,10 @@ class SierraSession(requests.Session):
         """
         if isinstance(keywords, str):
             keywords = keywords.strip()
+        elif isinstance(keywords, int):
+            keywords = str(keywords)
         elif isinstance(keywords, list):
-            keywords = ",".join([str(k) for k in keywords])
+            keywords = ",".join([str(k).strip() for k in keywords])
         if not keywords:
             return None
         return keywords

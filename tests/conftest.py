@@ -145,7 +145,7 @@ def mock_datetime_now(monkeypatch):
 
 @pytest.fixture
 def mock_session(mock_token) -> Generator[SierraSession, None, None]:
-    with SierraSession(authorization=mock_token) as session:
+    with SierraSession(authorization=mock_token, delay=None) as session:
         yield session
 
 

@@ -35,6 +35,21 @@ class TestSierraSession:
         with SierraSession(authorization=mock_token, timeout=1.5) as session:
             assert session.timeout == 1.5
 
+    def test_delay_default(self, mock_token):
+        with SierraSession(authorization=mock_token) as session:
+            assert session.delay == 2
+
+    def test_delay_None(self, mock_token):
+        with SierraSession(authorization=mock_token, delay=None) as session:
+            assert session.delay is None
+
+    def test_delay_type_error(self, mock_token):
+        with pytest.raises(BookopsSierraError) as exc:
+            SierraSession(authorization=mock_token, delay="1")
+        assert "Invalid type for argument 'delay'. Must be an integer." in str(
+            exc.value
+        )
+
     def test_bibs_endpoint(self, mock_token):
         with SierraSession(authorization=mock_token) as session:
             assert (
@@ -112,6 +127,24 @@ class TestSierraSession:
                 session._item_endpoint("123")
                 == "https://sierra_url.org/iii/sierra-api/v6/items/123"
             )
+
+    @pytest.mark.parametrize(
+        "arg,expectation",
+        [
+            (None, None),
+            ("", None),
+            ([], None),
+            ("12345", "12345"),
+            (12345, "12345"),
+            (["12345"], "12345"),
+            ([12345], "12345"),
+            ([12345, 12346], "12345,12346"),
+            (["12345", "12346"], "12345,12346"),
+            ("12345,12346", "12345,12346"),
+        ],
+    )
+    def test_prep_multi_keywords(self, mock_session, arg, expectation):
+        assert mock_session._prep_multi_keywords(arg) == expectation
 
     def test_fetch_new_token(self, mock_token):
         with SierraSession(authorization=mock_token) as session:

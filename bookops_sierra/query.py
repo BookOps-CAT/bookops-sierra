@@ -5,6 +5,7 @@
 from __future__ import annotations
 from typing import Union, TYPE_CHECKING
 import sys
+import time
 
 from requests import PreparedRequest
 from requests.exceptions import ConnectionError, HTTPError, Timeout
@@ -53,6 +54,10 @@ class Query:
         """
         if not isinstance(prepared_request, PreparedRequest):
             raise TypeError("Invalid type for argument 'prepared_request'.")
+
+        # obey set delay between requests
+        if session.delay:
+            time.sleep(session.delay)
 
         # make sure access token is still valid and if not request a new one
         if session.authorization.is_expired():
