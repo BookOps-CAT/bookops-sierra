@@ -26,7 +26,8 @@ class SierraSession(requests.Session):
         timeout:                how long to wait for server to send data before
                                 giving up; default value is 5 seconds
         delay:                  wait time between requests in the session in seconds,
-                                default 2 seconds
+                                default 1 seconds (warning, longer delay causes server
+                                to reset the connection preventing keep-alive)
     Example:
 
     >>> from bookops_sierra import SierraSession
@@ -44,7 +45,7 @@ class SierraSession(requests.Session):
             5,
             5,
         ),
-        delay: Optional[int] = 2,
+        delay: Optional[int] = 1,
     ):
         requests.Session.__init__(self)
 
