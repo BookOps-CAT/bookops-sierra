@@ -24,6 +24,7 @@ class TestSierraSessionLive:
                 "title",
                 "author",
                 "materialType",
+                "publishYear",
                 "bibLevel",
                 "catalogDate",
                 "country",

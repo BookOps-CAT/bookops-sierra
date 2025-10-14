@@ -37,7 +37,7 @@ class TestSierraSession:
 
     def test_delay_default(self, mock_token):
         with SierraSession(authorization=mock_token) as session:
-            assert session.delay == 2
+            assert session.delay == 1
 
     def test_delay_None(self, mock_token):
         with SierraSession(authorization=mock_token, delay=None) as session:
