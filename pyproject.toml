@@ -45,12 +45,18 @@ markers = [
 	"webtest: mark a test hitting live endpoints",
     "http_code: use to pass returned http code to 'mock_session_response' fixture that mocks 'requests.Session.send' method"
 ]
+addopts = '-m "not webtest" --cov=bookops_sierra/'
 
 [tool.coverage.run]
 relative_files = true
 source = ["."]
 
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E501"]
+
+[tool.ruff.format]
+skip-magic-trailing-comma = true
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
-addopts = '-m "not webtest" --cov=bookops_sierra/'
