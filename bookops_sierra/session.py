@@ -84,6 +84,9 @@ class SierraSession(requests.Session):
         except BookopsSierraError:
             raise
 
+    def _bib_endpoint(self, sid: str | int) -> str:
+        return f"{self._bibs_endpoint}{sid}"
+
     def _bibs_marc_endpoint(self) -> str:
         return f"{self._bibs_endpoint}marc"
 
@@ -96,17 +99,14 @@ class SierraSession(requests.Session):
     def _bibs_search_endpoint(self) -> str:
         return f"{self._bibs_endpoint}search"
 
-    def _bib_endpoint(self, sid: str | int) -> str:
-        return f"{self._bibs_endpoint}{sid}"
+    def _item_endpoint(self, sid: str | int) -> str:
+        return f"{self._items_endpoint}{sid}"
 
     def _items_checkouts_endpoint(self) -> str:
         return f"{self._items_endpoint}checkouts"
 
     def _items_query_endpoint(self) -> str:
         return f"{self._items_endpoint}query"
-
-    def _item_endpoint(self, sid: str | int) -> str:
-        return f"{self._items_endpoint}{sid}"
 
     def _prep_multi_keywords(
         self, keywords: str | list[str] | list[int] | None
@@ -193,6 +193,14 @@ class SierraSession(requests.Session):
         """
         self.headers.update({"Authorization": f"Bearer {self.authorization.token_str}"})
 
+    def bib_create(self) -> None:
+        # POST /bibs/
+        pass
+
+    def bib_delete(self) -> None:
+        # DELETE /bibs/{id}
+        pass
+
     def bib_get(
         self, sid: str | int, fields: str | list | None = None
     ) -> requests.Response:
@@ -246,14 +254,6 @@ class SierraSession(requests.Session):
         query = Query(self, prepared_request, timeout=self.timeout)
         return query.response
 
-    def bib_create(self) -> None:
-        # POST /bibs/
-        pass
-
-    def bib_delete(self) -> None:
-        # DELETE /bibs/{id}
-        pass
-
     def bib_update(
         self,
         sid: str | int,
@@ -296,6 +296,10 @@ class SierraSession(requests.Session):
         query = Query(self, prepared_request, timeout=self.timeout)
         return query.response
 
+    def bibs_delete_marc_files(self) -> None:
+        # DELETE /bibs/marc
+        pass
+
     def bibs_get(self) -> None:
         # GET /bibs/
         pass
@@ -308,16 +312,20 @@ class SierraSession(requests.Session):
         # GET /bibs/metadata
         pass
 
-    def bibs_delete_marc_files(self) -> None:
-        # DELETE /bibs/marc
-        pass
-
     def bibs_query(self) -> None:
         # POST /bibs/query
         pass
 
     def bibs_search(self) -> None:
         # GET /bibs/search
+        pass
+
+    def item_create(self) -> None:
+        # POST /items/
+        pass
+
+    def item_delete(self) -> None:
+        # DELETE /items/{id}
         pass
 
     def item_get(
@@ -350,8 +358,8 @@ class SierraSession(requests.Session):
         query = Query(self, prepared_request, timeout=self.timeout)
         return query.response
 
-    def item_delete(self) -> None:
-        # DELETE /items/{id}
+    def item_get_checkouts(self) -> None:
+        # GET /items/{id}/checkouts
         pass
 
     def item_update(
@@ -394,12 +402,8 @@ class SierraSession(requests.Session):
         query = Query(self, prepared_request, timeout=self.timeout)
         return query.response
 
-    def item_create(self) -> None:
-        # POST /items/
-        pass
-
-    def item_get_checkouts(self) -> None:
-        # GET /items/{id}/checkouts
+    def items_checkin(self) -> None:
+        # DELETE /items/checkouts/{barcode}
         pass
 
     def items_get(
@@ -474,10 +478,6 @@ class SierraSession(requests.Session):
 
     def items_get_checkouts(self) -> None:
         # GET /items/checkouts
-        pass
-
-    def items_checkin(self) -> None:
-        # DELETE /items/checkouts/{barcode}
         pass
 
     def items_query(self) -> None:
