@@ -41,7 +41,7 @@ class SierraSession(requests.Session):
         authorization: SierraToken,
         timeout: int | float | tuple[int, int] | tuple[float, float] | None = (5, 5),
         delay: int | None = 1,
-    ):
+    ) -> None:
         requests.Session.__init__(self)
 
         self.authorization = authorization
@@ -73,7 +73,7 @@ class SierraSession(requests.Session):
         # set token bearer for the session
         self._update_authorization()
 
-    def _fetch_new_token(self):
+    def _fetch_new_token(self) -> None:
         """
         Requests new access token from the oauth server and updates
         session headers with new authorization
@@ -187,7 +187,7 @@ class SierraSession(requests.Session):
 
         return ",".join(verified_nos)
 
-    def _update_authorization(self):
+    def _update_authorization(self) -> None:
         """
         Updates Bearer token in SierraSession headers
         """
@@ -246,11 +246,11 @@ class SierraSession(requests.Session):
         query = Query(self, prepared_request, timeout=self.timeout)
         return query.response
 
-    def bib_create(self):
+    def bib_create(self) -> None:
         # POST /bibs/
         pass
 
-    def bib_delete(self):
+    def bib_delete(self) -> None:
         # DELETE /bibs/{id}
         pass
 
@@ -260,7 +260,7 @@ class SierraSession(requests.Session):
         data: str | dict,
         data_format: str = "application/json",
         response_type: str = "application/json",
-    ):
+    ) -> requests.Response:
         """
         Update a Sierra bib. Please note, to avoid loosing data, provide the entire bib
         with modified elements in the `data` argument.
@@ -296,27 +296,27 @@ class SierraSession(requests.Session):
         query = Query(self, prepared_request, timeout=self.timeout)
         return query.response
 
-    def bibs_get(self):
+    def bibs_get(self) -> None:
         # GET /bibs/
         pass
 
-    def bibs_get_marc(self):
+    def bibs_get_marc(self) -> None:
         # GET /bibs/marc
         pass
 
-    def bibs_get_metadata(self):
+    def bibs_get_metadata(self) -> None:
         # GET /bibs/metadata
         pass
 
-    def bibs_delete_marc_files(self):
+    def bibs_delete_marc_files(self) -> None:
         # DELETE /bibs/marc
         pass
 
-    def bibs_query(self):
+    def bibs_query(self) -> None:
         # POST /bibs/query
         pass
 
-    def bibs_search(self):
+    def bibs_search(self) -> None:
         # GET /bibs/search
         pass
 
@@ -350,7 +350,7 @@ class SierraSession(requests.Session):
         query = Query(self, prepared_request, timeout=self.timeout)
         return query.response
 
-    def item_delete(self):
+    def item_delete(self) -> None:
         # DELETE /items/{id}
         pass
 
@@ -394,11 +394,11 @@ class SierraSession(requests.Session):
         query = Query(self, prepared_request, timeout=self.timeout)
         return query.response
 
-    def item_create(self):
+    def item_create(self) -> None:
         # POST /items/
         pass
 
-    def item_get_checkouts(self):
+    def item_get_checkouts(self) -> None:
         # GET /items/{id}/checkouts
         pass
 
@@ -417,8 +417,8 @@ class SierraSession(requests.Session):
         duedate: str | None = None,
         suppressed: str | None = None,
         locations: str | None = None,
-        response_type="application/json",
-    ):
+        response_type: str = "application/json",
+    ) -> requests.Response:
         """
         Retrieves a list of Sierra items of given item numbers.
         Uses GET /items/ endpoint.
@@ -472,14 +472,14 @@ class SierraSession(requests.Session):
 
         return query.response
 
-    def items_get_checkouts(self):
+    def items_get_checkouts(self) -> None:
         # GET /items/checkouts
         pass
 
-    def items_checkin(self):
+    def items_checkin(self) -> None:
         # DELETE /items/checkouts/{barcode}
         pass
 
-    def items_query(self):
+    def items_query(self) -> None:
         # POST /items/query
         pass
