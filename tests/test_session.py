@@ -22,6 +22,20 @@ class TestSierraSession:
             SierraSession("my_token")
         assert err_msg in str(exc.value)
 
+    def test__bibs_endpoint_property(self, mock_token):
+        with SierraSession(authorization=mock_token) as session:
+            assert (
+                session._bibs_endpoint
+                == "https://sierra_url.org/iii/sierra-api/v6/bibs/"
+            )
+
+    def test__items_endpoint_property(self, mock_token):
+        with SierraSession(authorization=mock_token) as session:
+            assert (
+                session._items_endpoint
+                == "https://sierra_url.org/iii/sierra-api/v6/items/"
+            )
+
     def test_default_agent_parameter(self, mock_token):
         with SierraSession(authorization=mock_token) as session:
             assert session.headers["User-Agent"] == f"{__title__}/{__version__}"
@@ -49,82 +63,79 @@ class TestSierraSession:
             exc.value
         )
 
-    def test_bibs_endpoint(self, mock_token):
+    def test__fetch_new_token(self, mock_token):
         with SierraSession(authorization=mock_token) as session:
-            assert (
-                session._bibs_endpoint
-                == "https://sierra_url.org/iii/sierra-api/v6/bibs/"
-            )
+            assert session.authorization.is_expired() is False
+            # force stale token
+            session.authorization.expires_on = datetime.datetime.now(
+                datetime.timezone.utc
+            ) - datetime.timedelta(seconds=1)
+            # verify token is expired
+            assert session.authorization.is_expired() is True
 
-    def test_items_endpoint(self, mock_token):
+            # fetch new one and retests
+            session._fetch_new_token()
+            assert session.authorization.is_expired() is False
+
+    def test__fetch_new_token_exceptions(self, mock_token, mock_timeout):
         with SierraSession(authorization=mock_token) as session:
-            assert (
-                session._items_endpoint
-                == "https://sierra_url.org/iii/sierra-api/v6/items/"
-            )
+            with pytest.raises(BookopsSierraError):
+                session._fetch_new_token()
 
-    def test_bibs_endpoint_custom_api_version(self, mock_token):
-        mock_token.api_version = "v4"
-        with SierraSession(authorization=mock_token) as session:
-            assert (
-                session._bibs_endpoint
-                == "https://sierra_url.org/iii/sierra-api/v4/bibs/"
-            )
-
-    def test_bibs_marc_endpoint(self, mock_token):
-        with SierraSession(authorization=mock_token) as session:
-            assert (
-                session._bibs_marc_endpoint()
-                == "https://sierra_url.org/iii/sierra-api/v6/bibs/marc"
-            )
-
-    def test_bibs_metadata_endpoint(self, mock_token):
-        with SierraSession(authorization=mock_token) as session:
-            assert (
-                session._bibs_metadata_endpoint()
-                == "https://sierra_url.org/iii/sierra-api/v6/bibs/metadata"
-            )
-
-    def test_bibs_query_endpoint(self, mock_token):
-        with SierraSession(authorization=mock_token) as session:
-            assert (
-                session._bibs_query_endpoint()
-                == "https://sierra_url.org/iii/sierra-api/v6/bibs/query"
-            )
-
-    def test_bibs_search_endpoint(self, mock_token):
-        with SierraSession(authorization=mock_token) as session:
-            assert (
-                session._bibs_search_endpoint()
-                == "https://sierra_url.org/iii/sierra-api/v6/bibs/search"
-            )
-
-    def test_bib_endpoint(self, mock_token):
+    def test__bib_endpoint(self, mock_token):
         with SierraSession(authorization=mock_token) as session:
             assert (
                 session._bib_endpoint("123")
                 == "https://sierra_url.org/iii/sierra-api/v6/bibs/123"
             )
 
-    def test_items_checkouts_endpoint(self, mock_token):
+    def test__bibs_marc_endpoint(self, mock_token):
+        with SierraSession(authorization=mock_token) as session:
+            assert (
+                session._bibs_marc_endpoint()
+                == "https://sierra_url.org/iii/sierra-api/v6/bibs/marc"
+            )
+
+    def test__bibs_metadata_endpoint(self, mock_token):
+        with SierraSession(authorization=mock_token) as session:
+            assert (
+                session._bibs_metadata_endpoint()
+                == "https://sierra_url.org/iii/sierra-api/v6/bibs/metadata"
+            )
+
+    def test__bibs_query_endpoint(self, mock_token):
+        with SierraSession(authorization=mock_token) as session:
+            assert (
+                session._bibs_query_endpoint()
+                == "https://sierra_url.org/iii/sierra-api/v6/bibs/query"
+            )
+
+    def test__bibs_search_endpoint(self, mock_token):
+        with SierraSession(authorization=mock_token) as session:
+            assert (
+                session._bibs_search_endpoint()
+                == "https://sierra_url.org/iii/sierra-api/v6/bibs/search"
+            )
+
+    def test__item_endpoint(self, mock_token):
+        with SierraSession(authorization=mock_token) as session:
+            assert (
+                session._item_endpoint("123")
+                == "https://sierra_url.org/iii/sierra-api/v6/items/123"
+            )
+
+    def test__items_checkouts_endpoint(self, mock_token):
         with SierraSession(authorization=mock_token) as session:
             assert (
                 session._items_checkouts_endpoint()
                 == "https://sierra_url.org/iii/sierra-api/v6/items/checkouts"
             )
 
-    def test_items_query_endpoint(self, mock_token):
+    def test__items_query_endpoint(self, mock_token):
         with SierraSession(authorization=mock_token) as session:
             assert (
                 session._items_query_endpoint()
                 == "https://sierra_url.org/iii/sierra-api/v6/items/query"
-            )
-
-    def test_item_endpoint(self, mock_token):
-        with SierraSession(authorization=mock_token) as session:
-            assert (
-                session._item_endpoint("123")
-                == "https://sierra_url.org/iii/sierra-api/v6/items/123"
             )
 
     @pytest.mark.parametrize(
@@ -142,27 +153,8 @@ class TestSierraSession:
             ("12345,12346", "12345,12346"),
         ],
     )
-    def test_prep_multi_keywords(self, mock_session, arg, expectation):
+    def test__prep_multi_keywords(self, mock_session, arg, expectation):
         assert mock_session._prep_multi_keywords(arg) == expectation
-
-    def test_fetch_new_token(self, mock_token):
-        with SierraSession(authorization=mock_token) as session:
-            assert session.authorization.is_expired() is False
-            # force stale token
-            session.authorization.expires_on = datetime.datetime.now(
-                datetime.timezone.utc
-            ) - datetime.timedelta(seconds=1)
-            # verify token is expired
-            assert session.authorization.is_expired() is True
-
-            # fetch new one and retests
-            session._fetch_new_token()
-            assert session.authorization.is_expired() is False
-
-    def test_fetch_new_token_exceptions(self, mock_token, mock_timeout):
-        with SierraSession(authorization=mock_token) as session:
-            with pytest.raises(BookopsSierraError):
-                session._fetch_new_token()
 
     @pytest.mark.parametrize(
         "arg,expectation",
@@ -177,14 +169,14 @@ class TestSierraSession:
             ("i21234567", "21234567"),
         ],
     )
-    def test_prep_sierra_number(self, mock_token, arg, expectation):
+    def test__prep_sierra_number(self, mock_token, arg, expectation):
         with SierraSession(authorization=mock_token) as session:
             assert session._prep_sierra_number(arg) == expectation
 
     @pytest.mark.parametrize(
         "arg", [12345, 1234567890, "12345", "bl1234567", "a12345678", None]
     )
-    def test_prep_sierra_number_exceptions(self, mock_token, arg):
+    def test__prep_sierra_number_exceptions(self, mock_token, arg):
         err_msg = "Invalid Sierra number passed."
         with SierraSession(authorization=mock_token) as session:
             with pytest.raises(BookopsSierraError) as exc:
@@ -194,6 +186,7 @@ class TestSierraSession:
     @pytest.mark.parametrize(
         "arg,expectation",
         [
+            (None, ""),
             ("12345678", "12345678"),
             ("12345678,12345679", "12345678,12345679"),
             ("b12345678a", "12345678"),
@@ -206,17 +199,9 @@ class TestSierraSession:
             (["b12345678a", "12345678"], "12345678,12345678"),
         ],
     )
-    def test_prep_sierra_numbers(self, mock_token, arg, expectation):
+    def test__prep_sierra_numbers(self, mock_token, arg, expectation):
         with SierraSession(authorization=mock_token) as session:
             assert session._prep_sierra_numbers(arg) == expectation
-
-    @pytest.mark.http_code(200)
-    def test_bib_get_success_default_fields(self, mock_session, mock_session_response):
-        assert mock_session.bib_get("12345678").status_code == 200
-
-    @pytest.mark.http_code(200)
-    def test_bib_get_marc(self, mock_session, mock_session_response):
-        assert mock_session.bib_get_marc("123345678").status_code == 200
 
     def test_bib_create(self, mock_session):
         assert mock_session.bib_create() is None
@@ -225,41 +210,12 @@ class TestSierraSession:
         assert mock_session.bib_delete() is None
 
     @pytest.mark.http_code(200)
-    def test_item_get_success_default_fields(self, mock_session, mock_session_response):
-        assert mock_session.item_get("12345678").status_code == 200
+    def test_bib_get(self, mock_session, mock_session_response):
+        assert mock_session.bib_get("12345678").status_code == 200
 
-    def test_item_delete(self, mock_session):
-        assert mock_session.item_delete() is None
-
-    @pytest.mark.http_code(204)
-    def test_item_update_success_data_as_dict(
-        self, mock_session, mock_session_response
-    ):
-        assert (
-            mock_session.item_update("12345678", data={"status": "m"}).status_code
-            == 204
-        )
-
-    @pytest.mark.http_code(204)
-    def test_item_update_success_data_as_str(self, mock_session, mock_session_response):
-        assert (
-            mock_session.item_update("12345678", data='{"status": "m"}').status_code
-            == 204
-        )
-
-    def test_item_update_invalid_body_type(self, mock_session):
-        with pytest.raises(BookopsSierraError) as exc:
-            mock_session.item_update("12345678", data=["foo", "bar"])
-        assert (
-            "Error. Given `data` argument is of a wrong type. Must be a str or dict."
-            in str(exc.value)
-        )
-
-    def test_item_create(self, mock_session):
-        assert mock_session.item_create() is None
-
-    def test_item_get_checkouts(self, mock_session):
-        assert mock_session.item_get_checkouts() is None
+    @pytest.mark.http_code(200)
+    def test_bib_get_marc(self, mock_session, mock_session_response):
+        assert mock_session.bib_get_marc("123345678").status_code == 200
 
     @pytest.mark.parametrize(
         "data",
@@ -270,7 +226,7 @@ class TestSierraSession:
         ],
     )
     @pytest.mark.http_code(200)
-    def test_bib_update_success(self, mock_session, mock_session_response, data):
+    def test_bib_update(self, mock_session, mock_session_response, data):
         assert mock_session.bib_update("12345678", data=data).status_code == 200
 
     @pytest.mark.http_code(200)
@@ -282,6 +238,9 @@ class TestSierraSession:
             == "Error. Given `data` argument is of a wrong type. Must be a str or dict."
         )
 
+    def test_bibs_delete_marc_files(self, mock_session):
+        assert mock_session.bibs_delete_marc_files() is None
+
     def test_bibs_get(self, mock_session):
         assert mock_session.bibs_get() is None
 
@@ -291,28 +250,47 @@ class TestSierraSession:
     def test_bibs_get_metadata(self, mock_session):
         assert mock_session.bibs_get_metadata() is None
 
-    def test_bibs_delete_marc_files(self, mock_session):
-        assert mock_session.bibs_delete_marc_files() is None
-
     def test_bibs_query(self, mock_session):
         assert mock_session.bibs_query() is None
 
     def test_bibs_search(self, mock_session):
         assert mock_session.bibs_search() is None
 
-    @pytest.mark.parametrize(
-        "items",
-        ["12345678,12345679", ["12345678", "12345679"], [12345678, 12345679], None],
-    )
-    @pytest.mark.http_code(200)
-    def test_items_get_success(self, mock_session, mock_session_response, items):
-        assert mock_session.items_get(sids=items).status_code == 200
+    def test_item_create(self, mock_session):
+        assert mock_session.item_create() is None
 
-    def test_items_get_checkouts(self, mock_session):
-        assert mock_session.items_get_checkouts() is None
+    def test_item_delete(self, mock_session):
+        assert mock_session.item_delete() is None
+
+    @pytest.mark.http_code(200)
+    def test_item_get(self, mock_session, mock_session_response):
+        assert mock_session.item_get("12345678").status_code == 200
+
+    def test_item_get_checkouts(self, mock_session):
+        assert mock_session.item_get_checkouts() is None
+
+    @pytest.mark.parametrize("data", [{"status": "m"}, '{"status": "m"}'])
+    @pytest.mark.http_code(200)
+    def test_item_update(self, mock_session, mock_session_response, data):
+        assert mock_session.item_update("12345678", data=data).status_code == 200
+
+    def test_item_update_invalid_body_type(self, mock_session):
+        with pytest.raises(BookopsSierraError) as exc:
+            mock_session.item_update("12345678", data=["foo", "bar"])
+        assert (
+            "Error. Given `data` argument is of a wrong type. Must be a str or dict."
+            in str(exc.value)
+        )
 
     def test_items_checkin(self, mock_session):
         assert mock_session.items_checkin() is None
+
+    @pytest.mark.http_code(200)
+    def test_items_get(self, mock_session, mock_session_response):
+        assert mock_session.items_get(sids=["12345678", "12345679"]).status_code == 200
+
+    def test_items_get_checkouts(self, mock_session):
+        assert mock_session.items_get_checkouts() is None
 
     def test_items_query(self, mock_session):
         assert mock_session.items_query() is None
