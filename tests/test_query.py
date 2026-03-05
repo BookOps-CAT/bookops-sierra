@@ -1,10 +1,8 @@
-# -*- coding: utf-8 -*-
-from contextlib import nullcontext as does_not_raise
 import datetime
 import time
+from contextlib import nullcontext as does_not_raise
 
 import pytest
-
 from requests import Request
 
 from bookops_sierra.errors import BookopsSierraError

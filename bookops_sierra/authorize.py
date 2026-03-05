@@ -1,17 +1,15 @@
-# -*- coding: utf-8 -*-
-
 """
 bookops_nypl_platform.authorize
 ===============================
 This module provides method to authenticate subsequent requests to NYPL Platform
 by obtaining an access token used for authorization.
 """
+
 import datetime
 import sys
 from typing import Any, Dict, Optional, Tuple, Union
 
 import requests
-
 
 from . import __title__, __version__
 from .errors import BookopsSierraError
@@ -43,10 +41,7 @@ class SierraToken:
         host_url: str,
         api_version: str = "v6",
         agent: Optional[str] = None,
-        timeout: Union[int, float, Tuple[int, int], Tuple[float, float], None] = (
-            3,
-            3,
-        ),
+        timeout: Union[int, float, Tuple[int, int], Tuple[float, float], None] = (3, 3),
     ):
         """Constructor"""
 

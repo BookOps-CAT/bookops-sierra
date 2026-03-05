@@ -1,13 +1,12 @@
-# -*- coding: utf-8 -*-
-
 """
 bookops_sierra.session
 =============================
 This module provides a session functionality used for making requests
 to Sierra API
 """
+
 import json
-from typing import Tuple, Union, Optional
+from typing import Optional, Tuple, Union
 
 import requests
 
@@ -41,10 +40,7 @@ class SierraSession(requests.Session):
     def __init__(
         self,
         authorization: SierraToken,
-        timeout: Union[int, float, Tuple[int, int], Tuple[float, float], None] = (
-            5,
-            5,
-        ),
+        timeout: Union[int, float, Tuple[int, int], Tuple[float, float], None] = (5, 5),
         delay: Optional[int] = 1,
     ):
         requests.Session.__init__(self)
@@ -199,9 +195,7 @@ class SierraSession(requests.Session):
         self.headers.update({"Authorization": f"Bearer {self.authorization.token_str}"})
 
     def bib_get(
-        self,
-        sid: Union[str, int],
-        fields: Optional[Union[str, list]] = None,
+        self, sid: Union[str, int], fields: Optional[Union[str, list]] = None
     ) -> requests.Response:
         """
         Retrieves specified fields of a Sierra bib.

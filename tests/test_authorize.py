@@ -1,10 +1,7 @@
-# -*- coding: utf-8 -*-
-
 import datetime
 import os
 
 import pytest
-
 
 from bookops_sierra.authorize import SierraToken
 from bookops_sierra.errors import BookopsSierraError
