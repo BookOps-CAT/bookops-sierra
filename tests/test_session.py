@@ -216,11 +216,20 @@ class TestSierraSession:
 
     @pytest.mark.http_code(200)
     def test_bib_get_marc(self, mock_session, mock_session_response):
-        assert mock_session.bib_get("123345678").status_code == 200
+        assert mock_session.bib_get_marc("123345678").status_code == 200
+
+    def test_bib_create(self, mock_session):
+        assert mock_session.bib_create() is None
+
+    def test_bib_delete(self, mock_session):
+        assert mock_session.bib_delete() is None
 
     @pytest.mark.http_code(200)
     def test_item_get_success_default_fields(self, mock_session, mock_session_response):
         assert mock_session.item_get("12345678").status_code == 200
+
+    def test_item_delete(self, mock_session):
+        assert mock_session.item_delete() is None
 
     @pytest.mark.http_code(204)
     def test_item_update_success_data_as_dict(
@@ -246,29 +255,64 @@ class TestSierraSession:
             in str(exc.value)
         )
 
-    @pytest.mark.http_code(204)
-    def test_bib_update_success_data_as_dict(self, mock_session, mock_session_response):
-        data = {
-            "varFields": [
-                {
-                    "fieldTag": "y",
-                    "marcTag": "901",
-                    "ind1": " ",
-                    "ind2": "1",
-                    "subfields": [{"tag": "a", "content": "TEST"}],
-                }
-            ]
-        }
-        assert mock_session.bib_update("12345678", data=data).status_code == 204
+    def test_item_create(self, mock_session):
+        assert mock_session.item_create() is None
+
+    def test_item_get_checkouts(self, mock_session):
+        assert mock_session.item_get_checkouts() is None
+
+    @pytest.mark.parametrize(
+        "data",
+        [
+            {"call_numbers": ["FOO", "BAR"]},
+            '{"call_numbers": ["FOO", "BAR"]}',
+            b'{"call_numbers": ["FOO", "BAR"]}',
+        ],
+    )
+    @pytest.mark.http_code(200)
+    def test_bib_update_success(self, mock_session, mock_session_response, data):
+        assert mock_session.bib_update("12345678", data=data).status_code == 200
 
     @pytest.mark.http_code(200)
-    def test_items_get_sids_as_str(self, mock_session, mock_session_response):
-        assert mock_session.items_get(sids="12345678,12345679").status_code == 200
+    def test_bib_update_type_error(self, mock_session, mock_session_response):
+        with pytest.raises(BookopsSierraError) as exc:
+            mock_session.bib_update("12345678", data=["12345"])
+        assert (
+            str(exc.value)
+            == "Error. Given `data` argument is of a wrong type. Must be a str or dict."
+        )
 
-    @pytest.mark.http_code(200)
-    def test_items_get_sids_as_list_of_str(self, mock_session, mock_session_response):
-        assert mock_session.items_get(sids=["12345678", "12345679"]).status_code == 200
+    def test_bibs_get(self, mock_session):
+        assert mock_session.bibs_get() is None
 
+    def test_bibs_get_marc(self, mock_session):
+        assert mock_session.bibs_get_marc() is None
+
+    def test_bibs_get_metadata(self, mock_session):
+        assert mock_session.bibs_get_metadata() is None
+
+    def test_bibs_delete_marc_files(self, mock_session):
+        assert mock_session.bibs_delete_marc_files() is None
+
+    def test_bibs_query(self, mock_session):
+        assert mock_session.bibs_query() is None
+
+    def test_bibs_search(self, mock_session):
+        assert mock_session.bibs_search() is None
+
+    @pytest.mark.parametrize(
+        "items",
+        ["12345678,12345679", ["12345678", "12345679"], [12345678, 12345679], None],
+    )
     @pytest.mark.http_code(200)
-    def test_items_get_sids_as_list_of_int(self, mock_session, mock_session_response):
-        assert mock_session.items_get(sids=[12345678, 12345679]).status_code == 200
+    def test_items_get_success(self, mock_session, mock_session_response, items):
+        assert mock_session.items_get(sids=items).status_code == 200
+
+    def test_items_get_checkouts(self, mock_session):
+        assert mock_session.items_get_checkouts() is None
+
+    def test_items_checkin(self, mock_session):
+        assert mock_session.items_checkin() is None
+
+    def test_items_query(self, mock_session):
+        assert mock_session.items_query() is None
