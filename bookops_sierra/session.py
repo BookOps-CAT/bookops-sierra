@@ -84,6 +84,9 @@ class SierraSession(requests.Session):
         except BookopsSierraError:
             raise
 
+    def _bib_endpoint(self, sid: str | int) -> str:
+        return f"{self._bibs_endpoint}{sid}"
+
     def _bibs_marc_endpoint(self) -> str:
         return f"{self._bibs_endpoint}marc"
 
@@ -96,17 +99,14 @@ class SierraSession(requests.Session):
     def _bibs_search_endpoint(self) -> str:
         return f"{self._bibs_endpoint}search"
 
-    def _bib_endpoint(self, sid: str | int) -> str:
-        return f"{self._bibs_endpoint}{sid}"
+    def _item_endpoint(self, sid: str | int) -> str:
+        return f"{self._items_endpoint}{sid}"
 
     def _items_checkouts_endpoint(self) -> str:
         return f"{self._items_endpoint}checkouts"
 
     def _items_query_endpoint(self) -> str:
         return f"{self._items_endpoint}query"
-
-    def _item_endpoint(self, sid: str | int) -> str:
-        return f"{self._items_endpoint}{sid}"
 
     def _prep_multi_keywords(
         self, keywords: str | list[str] | list[int] | None
