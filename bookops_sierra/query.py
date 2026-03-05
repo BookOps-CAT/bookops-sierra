@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import sys
 import time
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 from requests import PreparedRequest
 from requests.exceptions import ConnectionError, HTTPError, Timeout
@@ -28,7 +28,7 @@ class Query:
         self,
         session: SierraSession,
         prepared_request: PreparedRequest,
-        timeout: Union[int, float, tuple[int, int], tuple[float, float], None] = (5, 5),
+        timeout: int | float | tuple[int, int] | tuple[float, float] | None = (5, 5),
     ) -> None:
         """Initializes Query object.
 

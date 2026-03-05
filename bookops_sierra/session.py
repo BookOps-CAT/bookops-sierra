@@ -6,7 +6,6 @@ to Sierra API
 """
 
 import json
-from typing import Optional, Tuple, Union
 
 import requests
 
@@ -40,8 +39,8 @@ class SierraSession(requests.Session):
     def __init__(
         self,
         authorization: SierraToken,
-        timeout: Union[int, float, Tuple[int, int], Tuple[float, float], None] = (5, 5),
-        delay: Optional[int] = 1,
+        timeout: int | float | tuple[int, int] | tuple[float, float] | None = (5, 5),
+        delay: int | None = 1,
     ):
         requests.Session.__init__(self)
 
@@ -97,7 +96,7 @@ class SierraSession(requests.Session):
     def _bibs_search_endpoint(self) -> str:
         return f"{self._bibs_endpoint}search"
 
-    def _bib_endpoint(self, sid: Union[str, int]) -> str:
+    def _bib_endpoint(self, sid: str | int) -> str:
         return f"{self._bibs_endpoint}{sid}"
 
     def _items_checkouts_endpoint(self) -> str:
@@ -106,12 +105,12 @@ class SierraSession(requests.Session):
     def _items_query_endpoint(self) -> str:
         return f"{self._items_endpoint}query"
 
-    def _item_endpoint(self, sid: Union[str, int]) -> str:
+    def _item_endpoint(self, sid: str | int) -> str:
         return f"{self._items_endpoint}{sid}"
 
     def _prep_multi_keywords(
-        self, keywords: Union[str, list[str], list[int], None]
-    ) -> Optional[str]:
+        self, keywords: str | list[str] | list[int] | None
+    ) -> str | None:
         """
         Verifies or converts passed keywords into a comma separated string.
 
@@ -132,7 +131,7 @@ class SierraSession(requests.Session):
             return None
         return keywords
 
-    def _prep_sierra_number(self, sid: Union[str, int]) -> str:
+    def _prep_sierra_number(self, sid: str | int) -> str:
         """
         Verifies and formats Sierra bib numbers
 
@@ -165,7 +164,7 @@ class SierraSession(requests.Session):
 
         return sid
 
-    def _prep_sierra_numbers(self, sids: Union[str, list[str], list[int], None]) -> str:
+    def _prep_sierra_numbers(self, sids: str | list[str] | list[int] | None) -> str:
         """
         Verifies or converts passed Sierra bib numbers into a comma separated string.
 
@@ -195,7 +194,7 @@ class SierraSession(requests.Session):
         self.headers.update({"Authorization": f"Bearer {self.authorization.token_str}"})
 
     def bib_get(
-        self, sid: Union[str, int], fields: Optional[Union[str, list]] = None
+        self, sid: str | int, fields: str | list | None = None
     ) -> requests.Response:
         """
         Retrieves specified fields of a Sierra bib.
@@ -223,7 +222,7 @@ class SierraSession(requests.Session):
         return query.response
 
     def bib_get_marc(
-        self, sid: Union[str, int], response_type: str = "application/marc-xml"
+        self, sid: str | int, response_type: str = "application/marc-xml"
     ) -> requests.Response:
         """
         Get MARC data for a single bib.
@@ -257,8 +256,8 @@ class SierraSession(requests.Session):
 
     def bib_update(
         self,
-        sid: Union[str, int],
-        data: Union[str, dict],
+        sid: str | int,
+        data: str | dict,
         data_format: str = "application/json",
         response_type: str = "application/json",
     ):
@@ -323,8 +322,8 @@ class SierraSession(requests.Session):
 
     def item_get(
         self,
-        sid: Union[str, int],
-        fields: Optional[Union[str, list]] = None,
+        sid: str | int,
+        fields: str | list | None = None,
         response_type: str = "application/json",
     ) -> requests.Response:
         """
@@ -357,8 +356,8 @@ class SierraSession(requests.Session):
 
     def item_update(
         self,
-        sid: Union[str, int],
-        data: Union[str, dict],
+        sid: str | int,
+        data: str | dict,
         data_format: str = "application/json",
         response_type: str = "application/json",
     ) -> requests.Response:
@@ -405,19 +404,19 @@ class SierraSession(requests.Session):
 
     def items_get(
         self,
-        sids: Union[str, list[str], list[int], None] = None,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None,
-        fields: Optional[Union[str, list[str]]] = None,
-        createdDate: Optional[str] = None,
-        updatedDate: Optional[str] = None,
-        deletedDate: Optional[str] = None,
-        deleted: Optional[bool] = False,
-        bibIds: Optional[Union[str, list[str], list[int]]] = None,
-        status: Optional[str] = None,
-        duedate: Optional[str] = None,
-        suppressed: Optional[str] = None,
-        locations: Optional[str] = None,
+        sids: str | list[str] | list[int] | None = None,
+        limit: int | None = None,
+        offset: int | None = None,
+        fields: str | list[str] | None = None,
+        createdDate: str | None = None,
+        updatedDate: str | None = None,
+        deletedDate: str | None = None,
+        deleted: bool | None = False,
+        bibIds: str | list[str] | list[int] | None = None,
+        status: str | None = None,
+        duedate: str | None = None,
+        suppressed: str | None = None,
+        locations: str | None = None,
         response_type="application/json",
     ):
         """
