@@ -7,7 +7,7 @@ by obtaining an access token used for authorization.
 
 import datetime
 import sys
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any
 
 import requests
 
@@ -40,8 +40,8 @@ class SierraToken:
         client_secret: str,
         host_url: str,
         api_version: str = "v6",
-        agent: Optional[str] = None,
-        timeout: Union[int, float, Tuple[int, int], Tuple[float, float], None] = (3, 3),
+        agent: str | None = None,
+        timeout: int | float | tuple[int, int] | tuple[float, float] | None = (3, 3),
     ):
         """Constructor"""
 
@@ -71,7 +71,7 @@ class SierraToken:
     def _token_url(self) -> str:
         return f"{self.base_url}/token"
 
-    def _parse_access_token_string(self, server_response: Dict[str, Any]) -> str:
+    def _parse_access_token_string(self, server_response: dict[str, Any]) -> str:
         """
         Parsers access token string from auth_server response
 
@@ -90,7 +90,7 @@ class SierraToken:
             )
 
     def _calculate_expiration_time(
-        self, server_response: Dict[str, Any]
+        self, server_response: dict[str, Any]
     ) -> datetime.datetime:
         """
         Calculates access token expiration time based on it's life length
