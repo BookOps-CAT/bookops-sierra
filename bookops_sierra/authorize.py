@@ -42,24 +42,20 @@ class SierraToken:
         api_version: str = "v6",
         agent: str | None = None,
         timeout: int | float | tuple[int, int] | tuple[float, float] | None = (3, 3),
-    ):
+    ) -> None:
         """Constructor"""
 
         if not all([client_id, client_secret, host_url, api_version]):
             raise BookopsSierraError("Missing Sierra authentication argument.")
 
-        self.token_str = None
-        self.expires_on = None
-        self.server_response = None
-        self.auth = (client_id, client_secret)
-        self.host_url = host_url
+        self.agent = agent if agent else f"{__title__}/{__version__}"
         self.api_version = api_version
+        self.auth: tuple[str, str] = (client_id, client_secret)
+        self.expires_on: datetime.datetime
+        self.host_url = host_url
+        self.server_response: requests.Response
         self.timeout = timeout
-
-        if agent is None:
-            self.agent = f"{__title__}/{__version__}"
-        else:
-            self.agent = agent
+        self.token_str: str
 
         # make access token request
         self._get_token()
@@ -112,7 +108,7 @@ class SierraToken:
                 "Missing expires_in parameter in the server's response."
             )
 
-    def _get_token(self):
+    def _get_token(self) -> None:
         """
         Fetches Sierra API access token
         """
@@ -143,7 +139,7 @@ class SierraToken:
         except Exception:
             raise BookopsSierraError(f"Unexpected error occurred: {sys.exc_info()[0]}")
 
-    def is_expired(self):
+    def is_expired(self) -> bool:
         """
         Checks if the access token is expired
 
@@ -160,7 +156,7 @@ class SierraToken:
         else:
             return False
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             f"<token: {self.token_str}, "
             f"expires_on: {self.expires_on:%Y-%m-%d %H:%M:%S}, "
