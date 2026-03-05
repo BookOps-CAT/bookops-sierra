@@ -46,7 +46,7 @@ class SierraSession(requests.Session):
 
         self.authorization = authorization
         if not isinstance(self.authorization, SierraToken):
-            raise BookopsSierraError(
+            raise TypeError(
                 "Invalid authorization. Argument must be an instance of "
                 "`SierraToken` object."
             )
@@ -62,9 +62,7 @@ class SierraSession(requests.Session):
 
         # set delay between responses
         if not isinstance(delay, int) and delay is not None:
-            raise BookopsSierraError(
-                "Invalid type for argument 'delay'. Must be an integer."
-            )
+            raise TypeError(f"Expected int for `delay` param, got {type(delay)}.")
         self.delay = delay
 
         # set session wide response content type
@@ -148,19 +146,19 @@ class SierraSession(requests.Session):
         elif isinstance(sid, str):
             sid = sid.strip()
         else:
-            raise BookopsSierraError(err_msg)
+            raise ValueError(err_msg)
 
         if sid.lower()[0] in ("b", "i"):
             sid = sid[1:]
         if len(sid) == 8:
             if not sid.isdigit():
-                raise BookopsSierraError(err_msg)
+                raise ValueError(err_msg)
         elif len(sid) == 9:
             sid = sid[:8]
             if not sid.isdigit():
-                raise BookopsSierraError(err_msg)
+                raise ValueError(err_msg)
         else:
-            raise BookopsSierraError(err_msg)
+            raise ValueError(err_msg)
 
         return sid
 
@@ -283,10 +281,7 @@ class SierraSession(requests.Session):
         elif isinstance(data, str) or isinstance(data, bytes):
             body = data
         else:
-            raise BookopsSierraError(
-                "Error. Given `data` argument is of a wrong type. "
-                "Must be a str or dict."
-            )
+            raise TypeError(f"Expected dict or str for `data` param, got {type(data)}.")
 
         # prep request
         req = requests.Request("PUT", url, data=body, headers=header)
@@ -389,10 +384,7 @@ class SierraSession(requests.Session):
         elif isinstance(data, str):
             body = data
         else:
-            raise BookopsSierraError(
-                "Error. Given `data` argument is of a wrong type. "
-                "Must be a str or dict."
-            )
+            raise TypeError(f"Expected dict or str for `data` param, got {type(data)}.")
 
         # prep request
         req = requests.Request("PUT", url, data=body, headers=header)

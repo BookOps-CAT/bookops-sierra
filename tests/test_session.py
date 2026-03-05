@@ -18,7 +18,7 @@ class TestSierraSession:
 
     def test_authorization_invalid_argument(self):
         err_msg = "Invalid authorization. Argument must be an instance of `SierraToken` object."  # noqa:E501
-        with pytest.raises(BookopsSierraError) as exc:
+        with pytest.raises(TypeError) as exc:
             SierraSession("my_token")
         assert err_msg in str(exc.value)
 
@@ -57,11 +57,9 @@ class TestSierraSession:
             assert session.delay is None
 
     def test_delay_type_error(self, mock_token):
-        with pytest.raises(BookopsSierraError) as exc:
+        with pytest.raises(TypeError) as exc:
             SierraSession(authorization=mock_token, delay="1")
-        assert "Invalid type for argument 'delay'. Must be an integer." in str(
-            exc.value
-        )
+        assert str(exc.value) == "Expected int for `delay` param, got <class 'str'>."
 
     def test__fetch_new_token(self, mock_token):
         with SierraSession(authorization=mock_token) as session:
@@ -179,7 +177,7 @@ class TestSierraSession:
     def test__prep_sierra_number_exceptions(self, mock_token, arg):
         err_msg = "Invalid Sierra number passed."
         with SierraSession(authorization=mock_token) as session:
-            with pytest.raises(BookopsSierraError) as exc:
+            with pytest.raises(ValueError) as exc:
                 session._prep_sierra_number(arg)
             assert err_msg in str(exc.value)
 
@@ -231,11 +229,11 @@ class TestSierraSession:
 
     @pytest.mark.http_code(200)
     def test_bib_update_type_error(self, mock_session, mock_session_response):
-        with pytest.raises(BookopsSierraError) as exc:
+        with pytest.raises(TypeError) as exc:
             mock_session.bib_update("12345678", data=["12345"])
         assert (
             str(exc.value)
-            == "Error. Given `data` argument is of a wrong type. Must be a str or dict."
+            == "Expected dict or str for `data` param, got <class 'list'>."
         )
 
     def test_bibs_delete_marc_files(self, mock_session):
@@ -275,11 +273,11 @@ class TestSierraSession:
         assert mock_session.item_update("12345678", data=data).status_code == 200
 
     def test_item_update_invalid_body_type(self, mock_session):
-        with pytest.raises(BookopsSierraError) as exc:
+        with pytest.raises(TypeError) as exc:
             mock_session.item_update("12345678", data=["foo", "bar"])
         assert (
-            "Error. Given `data` argument is of a wrong type. Must be a str or dict."
-            in str(exc.value)
+            str(exc.value)
+            == "Expected dict or str for `data` param, got <class 'list'>."
         )
 
     def test_items_checkin(self, mock_session):
