@@ -1,13 +1,12 @@
-# -*- coding: utf-8 -*-
-
 """
 bookops_sierra.session testing
 """
+
 import datetime
+
 import pytest
 
 from bookops_sierra import __title__, __version__
-
 from bookops_sierra.errors import BookopsSierraError
 from bookops_sierra.session import SierraSession
 
@@ -183,8 +182,7 @@ class TestSierraSession:
             assert session._prep_sierra_number(arg) == expectation
 
     @pytest.mark.parametrize(
-        "arg",
-        [12345, 1234567890, "12345", "bl1234567", "a12345678", None],
+        "arg", [12345, 1234567890, "12345", "bl1234567", "a12345678", None]
     )
     def test_prep_sierra_number_exceptions(self, mock_token, arg):
         err_msg = "Invalid Sierra number passed."
@@ -257,11 +255,9 @@ class TestSierraSession:
                     "marcTag": "901",
                     "ind1": " ",
                     "ind2": "1",
-                    "subfields": [
-                        {"tag": "a", "content": "TEST"},
-                    ],
-                },
-            ],
+                    "subfields": [{"tag": "a", "content": "TEST"}],
+                }
+            ]
         }
         assert mock_session.bib_update("12345678", data=data).status_code == 204
 

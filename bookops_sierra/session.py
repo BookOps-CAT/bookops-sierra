@@ -1,13 +1,11 @@
-# -*- coding: utf-8 -*-
-
 """
 bookops_sierra.session
 =============================
 This module provides a session functionality used for making requests
 to Sierra API
 """
+
 import json
-from typing import Tuple, Union, Optional
 
 import requests
 
@@ -41,12 +39,9 @@ class SierraSession(requests.Session):
     def __init__(
         self,
         authorization: SierraToken,
-        timeout: Union[int, float, Tuple[int, int], Tuple[float, float], None] = (
-            5,
-            5,
-        ),
-        delay: Optional[int] = 1,
-    ):
+        timeout: int | float | tuple[int, int] | tuple[float, float] | None = (5, 5),
+        delay: int | None = 1,
+    ) -> None:
         requests.Session.__init__(self)
 
         self.authorization = authorization
@@ -78,7 +73,7 @@ class SierraSession(requests.Session):
         # set token bearer for the session
         self._update_authorization()
 
-    def _fetch_new_token(self):
+    def _fetch_new_token(self) -> None:
         """
         Requests new access token from the oauth server and updates
         session headers with new authorization
@@ -101,7 +96,7 @@ class SierraSession(requests.Session):
     def _bibs_search_endpoint(self) -> str:
         return f"{self._bibs_endpoint}search"
 
-    def _bib_endpoint(self, sid: Union[str, int]) -> str:
+    def _bib_endpoint(self, sid: str | int) -> str:
         return f"{self._bibs_endpoint}{sid}"
 
     def _items_checkouts_endpoint(self) -> str:
@@ -110,12 +105,12 @@ class SierraSession(requests.Session):
     def _items_query_endpoint(self) -> str:
         return f"{self._items_endpoint}query"
 
-    def _item_endpoint(self, sid: Union[str, int]) -> str:
+    def _item_endpoint(self, sid: str | int) -> str:
         return f"{self._items_endpoint}{sid}"
 
     def _prep_multi_keywords(
-        self, keywords: Union[str, list[str], list[int], None]
-    ) -> Optional[str]:
+        self, keywords: str | list[str] | list[int] | None
+    ) -> str | None:
         """
         Verifies or converts passed keywords into a comma separated string.
 
@@ -136,7 +131,7 @@ class SierraSession(requests.Session):
             return None
         return keywords
 
-    def _prep_sierra_number(self, sid: Union[str, int]) -> str:
+    def _prep_sierra_number(self, sid: str | int) -> str:
         """
         Verifies and formats Sierra bib numbers
 
@@ -169,7 +164,7 @@ class SierraSession(requests.Session):
 
         return sid
 
-    def _prep_sierra_numbers(self, sids: Union[str, list[str], list[int], None]) -> str:
+    def _prep_sierra_numbers(self, sids: str | list[str] | list[int] | None) -> str:
         """
         Verifies or converts passed Sierra bib numbers into a comma separated string.
 
@@ -192,16 +187,14 @@ class SierraSession(requests.Session):
 
         return ",".join(verified_nos)
 
-    def _update_authorization(self):
+    def _update_authorization(self) -> None:
         """
         Updates Bearer token in SierraSession headers
         """
         self.headers.update({"Authorization": f"Bearer {self.authorization.token_str}"})
 
     def bib_get(
-        self,
-        sid: Union[str, int],
-        fields: Optional[Union[str, list]] = None,
+        self, sid: str | int, fields: str | list | None = None
     ) -> requests.Response:
         """
         Retrieves specified fields of a Sierra bib.
@@ -229,7 +222,7 @@ class SierraSession(requests.Session):
         return query.response
 
     def bib_get_marc(
-        self, sid: Union[str, int], response_type: str = "application/marc-xml"
+        self, sid: str | int, response_type: str = "application/marc-xml"
     ) -> requests.Response:
         """
         Get MARC data for a single bib.
@@ -253,21 +246,21 @@ class SierraSession(requests.Session):
         query = Query(self, prepared_request, timeout=self.timeout)
         return query.response
 
-    def bib_create(self):
+    def bib_create(self) -> None:
         # POST /bibs/
         pass
 
-    def bib_delete(self):
+    def bib_delete(self) -> None:
         # DELETE /bibs/{id}
         pass
 
     def bib_update(
         self,
-        sid: Union[str, int],
-        data: Union[str, dict],
+        sid: str | int,
+        data: str | dict,
         data_format: str = "application/json",
         response_type: str = "application/json",
-    ):
+    ) -> requests.Response:
         """
         Update a Sierra bib. Please note, to avoid loosing data, provide the entire bib
         with modified elements in the `data` argument.
@@ -303,34 +296,34 @@ class SierraSession(requests.Session):
         query = Query(self, prepared_request, timeout=self.timeout)
         return query.response
 
-    def bibs_get(self):
+    def bibs_get(self) -> None:
         # GET /bibs/
         pass
 
-    def bibs_get_marc(self):
+    def bibs_get_marc(self) -> None:
         # GET /bibs/marc
         pass
 
-    def bibs_get_metadata(self):
+    def bibs_get_metadata(self) -> None:
         # GET /bibs/metadata
         pass
 
-    def bibs_delete_marc_files(self):
+    def bibs_delete_marc_files(self) -> None:
         # DELETE /bibs/marc
         pass
 
-    def bibs_query(self):
+    def bibs_query(self) -> None:
         # POST /bibs/query
         pass
 
-    def bibs_search(self):
+    def bibs_search(self) -> None:
         # GET /bibs/search
         pass
 
     def item_get(
         self,
-        sid: Union[str, int],
-        fields: Optional[Union[str, list]] = None,
+        sid: str | int,
+        fields: str | list | None = None,
         response_type: str = "application/json",
     ) -> requests.Response:
         """
@@ -357,14 +350,14 @@ class SierraSession(requests.Session):
         query = Query(self, prepared_request, timeout=self.timeout)
         return query.response
 
-    def item_delete(self):
+    def item_delete(self) -> None:
         # DELETE /items/{id}
         pass
 
     def item_update(
         self,
-        sid: Union[str, int],
-        data: Union[str, dict],
+        sid: str | int,
+        data: str | dict,
         data_format: str = "application/json",
         response_type: str = "application/json",
     ) -> requests.Response:
@@ -401,31 +394,31 @@ class SierraSession(requests.Session):
         query = Query(self, prepared_request, timeout=self.timeout)
         return query.response
 
-    def item_create(self):
+    def item_create(self) -> None:
         # POST /items/
         pass
 
-    def item_get_checkouts(self):
+    def item_get_checkouts(self) -> None:
         # GET /items/{id}/checkouts
         pass
 
     def items_get(
         self,
-        sids: Union[str, list[str], list[int], None] = None,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None,
-        fields: Optional[Union[str, list[str]]] = None,
-        createdDate: Optional[str] = None,
-        updatedDate: Optional[str] = None,
-        deletedDate: Optional[str] = None,
-        deleted: Optional[bool] = False,
-        bibIds: Optional[Union[str, list[str], list[int]]] = None,
-        status: Optional[str] = None,
-        duedate: Optional[str] = None,
-        suppressed: Optional[str] = None,
-        locations: Optional[str] = None,
-        response_type="application/json",
-    ):
+        sids: str | list[str] | list[int] | None = None,
+        limit: int | None = None,
+        offset: int | None = None,
+        fields: str | list[str] | None = None,
+        createdDate: str | None = None,
+        updatedDate: str | None = None,
+        deletedDate: str | None = None,
+        deleted: bool | None = False,
+        bibIds: str | list[str] | list[int] | None = None,
+        status: str | None = None,
+        duedate: str | None = None,
+        suppressed: str | None = None,
+        locations: str | None = None,
+        response_type: str = "application/json",
+    ) -> requests.Response:
         """
         Retrieves a list of Sierra items of given item numbers.
         Uses GET /items/ endpoint.
@@ -479,14 +472,14 @@ class SierraSession(requests.Session):
 
         return query.response
 
-    def items_get_checkouts(self):
+    def items_get_checkouts(self) -> None:
         # GET /items/checkouts
         pass
 
-    def items_checkin(self):
+    def items_checkin(self) -> None:
         # DELETE /items/checkouts/{barcode}
         pass
 
-    def items_query(self):
+    def items_query(self) -> None:
         # POST /items/query
         pass

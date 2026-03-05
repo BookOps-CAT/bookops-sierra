@@ -1,15 +1,12 @@
-# -*- coding: utf-8 -*-
-
 import datetime
-import os
 import json
+import os
 from typing import Generator
 
 import pytest
 import requests
 
-
-from bookops_sierra import SierraToken, SierraSession
+from bookops_sierra import SierraSession, SierraToken
 from bookops_sierra.errors import BookopsSierraError
 
 

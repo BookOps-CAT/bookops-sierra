@@ -1,11 +1,10 @@
-# -*- coding: utf-8 -*-
-
 """Handles requests to Sierra server."""
 
 from __future__ import annotations
-from typing import Union, TYPE_CHECKING
+
 import sys
 import time
+from typing import TYPE_CHECKING
 
 from requests import PreparedRequest
 from requests.exceptions import ConnectionError, HTTPError, Timeout
@@ -29,10 +28,7 @@ class Query:
         self,
         session: SierraSession,
         prepared_request: PreparedRequest,
-        timeout: Union[int, float, tuple[int, int], tuple[float, float], None] = (
-            5,
-            5,
-        ),
+        timeout: int | float | tuple[int, int] | tuple[float, float] | None = (5, 5),
     ) -> None:
         """Initializes Query object.
 
