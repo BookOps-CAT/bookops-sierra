@@ -11,7 +11,6 @@ import requests
 
 from .authorize import SierraToken
 from .errors import BookopsSierraError
-from .query import Query
 
 
 class SierraSession(requests.Session):
@@ -41,26 +40,19 @@ class SierraSession(requests.Session):
         requests.Session.__init__(self)
 
         self.authorization = authorization
-        if not isinstance(self.authorization, SierraToken):
-            raise TypeError(
-                "Invalid authorization. Argument must be an instance of "
-                "`SierraToken` object."
-            )
+        self.timeout = timeout
 
         self._bibs_endpoint = f"{self.authorization.base_url}/bibs/"
         self._items_endpoint = f"{self.authorization.base_url}/items/"
 
         # set agent for requests
-        self.headers.update({"User-Agent": self.authorization.agent})
-
-        # set timeout
-        self.timeout = timeout
-
-        # set session wide response content type
-        self.headers.update({"Accept": "application/json"})
-
-        # set token bearer for the session
-        self._update_authorization()
+        self.headers.update(
+            {
+                "User-Agent": self.authorization.agent,
+                "Accept": "application/json",
+                "Authorization": f"Bearer {self.authorization.token_str}",
+            }
+        )
 
     def _fetch_new_token(self) -> None:
         """
@@ -69,7 +61,9 @@ class SierraSession(requests.Session):
         """
         try:
             self.authorization._get_token()
-            self._update_authorization()
+            self.headers.update(
+                {"Authorization": f"Bearer {self.authorization.token_str}"}
+            )
         except BookopsSierraError:
             raise
 
@@ -176,11 +170,17 @@ class SierraSession(requests.Session):
 
         return ",".join(verified_nos)
 
-    def _update_authorization(self) -> None:
+    def _send_http_request(
+        self,
+        prepared_request: requests.PreparedRequest,
+        timeout: int | float | tuple[int, int] | tuple[float, float] | None,
+    ) -> requests.Response:
         """
-        Updates Bearer token in SierraSession headers
+        Checks token and sends prepared request to web service.
         """
-        self.headers.update({"Authorization": f"Bearer {self.authorization.token_str}"})
+        if self.authorization.is_expired():
+            self._fetch_new_token()
+        return self.send(prepared_request, timeout=timeout)
 
     def bib_create(self) -> None:
         # POST /bibs/
@@ -214,9 +214,8 @@ class SierraSession(requests.Session):
         prepared_request = self.prepare_request(req)
 
         # send request
-        query = Query(self, prepared_request, timeout=self.timeout)
-
-        return query.response
+        response = self._send_http_request(prepared_request, timeout=self.timeout)
+        return response
 
     def bib_get_marc(
         self, sid: str | int, response_type: str = "application/marc-xml"
@@ -240,8 +239,8 @@ class SierraSession(requests.Session):
         prepared_request = self.prepare_request(req)
 
         # send request
-        query = Query(self, prepared_request, timeout=self.timeout)
-        return query.response
+        response = self._send_http_request(prepared_request, timeout=self.timeout)
+        return response
 
     def bib_update(
         self,
@@ -279,8 +278,8 @@ class SierraSession(requests.Session):
         prepared_request = self.prepare_request(req)
 
         # send request
-        query = Query(self, prepared_request, timeout=self.timeout)
-        return query.response
+        response = self._send_http_request(prepared_request, timeout=self.timeout)
+        return response
 
     def bibs_delete_marc_files(self) -> None:
         # DELETE /bibs/marc
@@ -341,8 +340,8 @@ class SierraSession(requests.Session):
         prepared_request = self.prepare_request(req)
 
         # send request
-        query = Query(self, prepared_request, timeout=self.timeout)
-        return query.response
+        response = self._send_http_request(prepared_request, timeout=self.timeout)
+        return response
 
     def item_get_checkouts(self) -> None:
         # GET /items/{id}/checkouts
@@ -382,8 +381,8 @@ class SierraSession(requests.Session):
         prepared_request = self.prepare_request(req)
 
         # send request
-        query = Query(self, prepared_request, timeout=self.timeout)
-        return query.response
+        response = self._send_http_request(prepared_request, timeout=self.timeout)
+        return response
 
     def items_checkin(self) -> None:
         # DELETE /items/checkouts/{barcode}
@@ -455,9 +454,8 @@ class SierraSession(requests.Session):
         prepared_request = self.prepare_request(req)
 
         # send request
-        query = Query(self, prepared_request, timeout=self.timeout)
-
-        return query.response
+        response = self._send_http_request(prepared_request, timeout=self.timeout)
+        return response
 
     def items_get_checkouts(self) -> None:
         # GET /items/checkouts
