@@ -42,8 +42,9 @@ class SierraSession(requests.Session):
         self.authorization = authorization
         self.timeout = timeout
 
-        self._bibs_endpoint = f"{self.authorization.base_url}/bibs/"
-        self._items_endpoint = f"{self.authorization.base_url}/items/"
+        self._bibs_endpoint = f"{self.authorization.base_url}/bibs"
+        self._items_endpoint = f"{self.authorization.base_url}/items"
+        self._patrons_endpoint = f"{self.authorization.base_url}/patrons"
 
         # set agent for requests
         self.headers.update(
@@ -68,28 +69,34 @@ class SierraSession(requests.Session):
             raise
 
     def _bib_endpoint(self, sid: str | int) -> str:
-        return f"{self._bibs_endpoint}{sid}"
+        return f"{self._bibs_endpoint}/{sid}"
 
     def _bibs_marc_endpoint(self) -> str:
-        return f"{self._bibs_endpoint}marc"
+        return f"{self._bibs_endpoint}/marc"
 
     def _bibs_metadata_endpoint(self) -> str:
-        return f"{self._bibs_endpoint}metadata"
+        return f"{self._bibs_endpoint}/metadata"
 
     def _bibs_query_endpoint(self) -> str:
-        return f"{self._bibs_endpoint}query"
+        return f"{self._bibs_endpoint}/query"
 
     def _bibs_search_endpoint(self) -> str:
-        return f"{self._bibs_endpoint}search"
+        return f"{self._bibs_endpoint}/search"
 
     def _item_endpoint(self, sid: str | int) -> str:
-        return f"{self._items_endpoint}{sid}"
+        return f"{self._items_endpoint}/{sid}"
 
     def _items_checkouts_endpoint(self) -> str:
-        return f"{self._items_endpoint}checkouts"
+        return f"{self._items_endpoint}/checkouts"
 
     def _items_query_endpoint(self) -> str:
-        return f"{self._items_endpoint}query"
+        return f"{self._items_endpoint}/query"
+
+    def _patron_holds_endpoint(self, id: str | int) -> str:
+        return f"{self._patrons_endpoint}/{id}/holds"
+
+    def _patron_holds_requests_endpoint(self, id: str | int) -> str:
+        return f"{self._patrons_endpoint}/{id}/holds/requests"
 
     def _prep_multi_keywords(
         self, keywords: str | list[str] | list[int] | None
@@ -124,7 +131,7 @@ class SierraSession(requests.Session):
         Returns:
             sid
         """
-        err_msg = "Invalid Sierra number passed."
+        err_msg = f"Invalid Sierra number passed: {sid}"
 
         if isinstance(sid, int):
             sid = str(sid)
@@ -343,9 +350,32 @@ class SierraSession(requests.Session):
         response = self._send_http_request(prepared_request, timeout=self.timeout)
         return response
 
-    def item_get_checkouts(self) -> None:
-        # GET /items/{id}/checkouts
-        pass
+    def item_get_checkouts(
+        self, sid: str, response_type: str = "application/json"
+    ) -> requests.Response:
+        """
+        Gets checkouts for an item record by item ID.
+        Uses GET /items/{id}/checkouts
+        Args:
+            sid:
+                the item ID for the record
+            response_type:
+                choice of application/json or application/xml
+
+        Returns:
+            requests.Response instance
+        """
+        prepped_sid = self._prep_sierra_number(sid)
+        url = f"{self._item_endpoint(prepped_sid)}/checkouts"
+        header = {"Accept": response_type}
+
+        # prep request
+        req = requests.Request("GET", url, headers=header)
+        prepared_request = self.prepare_request(req)
+
+        # send request
+        response = self._send_http_request(prepared_request, timeout=self.timeout)
+        return response
 
     def item_update(
         self,
@@ -464,3 +494,86 @@ class SierraSession(requests.Session):
     def items_query(self) -> None:
         # POST /items/query
         pass
+
+    def patron_create_hold_request(
+        self,
+        id: int,
+        pickupLocation: str,
+        recordNumber: int,
+        recordType: str,
+        response_type: str = "application/json",
+    ) -> requests.Response:
+        """
+        Create a new hold request for a patron.
+        Uses POST /patrons/{id}/holds/requests endpoint.
+
+        Args:
+            id:
+                the patron ID
+            pickupLocation:
+                the pickup location code
+            recordNumber:
+                the ID for the record on which to place the hold
+            recordType:
+                the record type code, i.e. bib ('b'), item ('i'), or volume ('j')
+            response_type:
+                choice of application/json or application/xml
+
+        Returns:
+            requests.Response instance
+        """
+        url = f"{self._patron_holds_requests_endpoint(id)}"
+        header = {"Accept": response_type}
+        if recordType not in ["b", "i", "j"]:
+            raise ValueError(
+                "Invalid recordType value. Valid values include: 'b' (bib), "
+                "'i' (item), and 'j' (volume)."
+            )
+        payload = {
+            "recordType": recordType,
+            "pickupLocation": pickupLocation,
+            "recordNumber": recordNumber,
+        }
+
+        # prep request
+        req = requests.Request("POST", url, json=payload, headers=header)
+        prepared_request = self.prepare_request(req)
+
+        # send request
+        response = self._send_http_request(prepared_request, timeout=self.timeout)
+        return response
+
+    def patron_get_holds(
+        self,
+        id: str,
+        limit: int | None = 50,
+        offset: int | None = 0,
+        response_type: str = "application/json",
+    ) -> requests.Response:
+        """
+        Gets holds data for a single patron record.
+        Uses GET /patrons/{id}/holds endpoint.
+
+        Args:
+            id:
+                the patron ID
+            limit:
+                total number of checkout records to return
+            offset:
+                the first record (zero-indexed) of the result set to return
+            response_type:
+                choice of application/json or application/xml
+
+        Returns:
+            requests.Response instance
+        """
+        url = f"{self._patron_holds_endpoint(id)}"
+        header = {"Accept": response_type}
+        payload = {"limit": limit, "offset": offset}
+        # prep request
+        req = requests.Request("GET", url, params=payload, headers=header)
+        prepared_request = self.prepare_request(req)
+
+        # send request
+        response = self._send_http_request(prepared_request, timeout=self.timeout)
+        return response

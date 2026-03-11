@@ -20,14 +20,21 @@ class TestSierraSession:
         with SierraSession(authorization=mock_token) as session:
             assert (
                 session._bibs_endpoint
-                == "https://sierra_url.org/iii/sierra-api/v6/bibs/"
+                == "https://sierra_url.org/iii/sierra-api/v6/bibs"
             )
 
     def test__items_endpoint_property(self, mock_token):
         with SierraSession(authorization=mock_token) as session:
             assert (
                 session._items_endpoint
-                == "https://sierra_url.org/iii/sierra-api/v6/items/"
+                == "https://sierra_url.org/iii/sierra-api/v6/items"
+            )
+
+    def test__patrons_endpoint(self, mock_token):
+        with SierraSession(authorization=mock_token) as session:
+            assert (
+                session._patrons_endpoint
+                == "https://sierra_url.org/iii/sierra-api/v6/patrons"
             )
 
     def test_default_agent_parameter(self, mock_token):
@@ -117,6 +124,20 @@ class TestSierraSession:
                 == "https://sierra_url.org/iii/sierra-api/v6/items/query"
             )
 
+    def test__patron_holds_endpoint(self, mock_token):
+        with SierraSession(authorization=mock_token) as session:
+            assert (
+                session._patron_holds_endpoint(id="12345")
+                == "https://sierra_url.org/iii/sierra-api/v6/patrons/12345/holds"
+            )
+
+    def test__patron_holds_requests_endpoint(self, mock_token):
+        with SierraSession(authorization=mock_token) as session:
+            assert (
+                session._patron_holds_requests_endpoint(id="1")
+                == "https://sierra_url.org/iii/sierra-api/v6/patrons/1/holds/requests"
+            )
+
     @pytest.mark.parametrize(
         "arg,expectation",
         [
@@ -156,7 +177,7 @@ class TestSierraSession:
         "arg", [12345, 1234567890, "12345", "bl1234567", "a12345678", None]
     )
     def test__prep_sierra_number_exceptions(self, mock_token, arg):
-        err_msg = "Invalid Sierra number passed."
+        err_msg = f"Invalid Sierra number passed: {arg}"
         with SierraSession(authorization=mock_token) as session:
             with pytest.raises(ValueError) as exc:
                 session._prep_sierra_number(arg)
@@ -245,8 +266,9 @@ class TestSierraSession:
     def test_item_get(self, mock_session, mock_session_response):
         assert mock_session.item_get("12345678").status_code == 200
 
-    def test_item_get_checkouts(self, mock_session):
-        assert mock_session.item_get_checkouts() is None
+    @pytest.mark.http_code(200)
+    def test_item_get_checkouts(self, mock_session, mock_session_response):
+        assert mock_session.item_get_checkouts(sid="12345678").status_code == 200
 
     @pytest.mark.parametrize("data", [{"status": "m"}, '{"status": "m"}'])
     @pytest.mark.http_code(200)
@@ -275,9 +297,40 @@ class TestSierraSession:
         assert mock_session.items_query() is None
 
     @pytest.mark.http_code(200)
-    def test__send_http_request_with_stale_token(
+    def test_patron_create_hold_request(self, mock_session, mock_session_response):
+        assert (
+            mock_session.patron_create_hold_request(
+                id="12345678",
+                pickupLocation="foo",
+                recordNumber="987654321",
+                recordType="i",
+            ).status_code
+            == 200
+        )
+
+    @pytest.mark.http_code(200)
+    def test_patron_create_hold_request_invalid_record_type(
         self, mock_session, mock_session_response
     ):
+        with pytest.raises(ValueError) as exc:
+            mock_session.patron_create_hold_request(
+                id="12345678",
+                pickupLocation="foo",
+                recordNumber="987654321",
+                recordType="z",
+            )
+        assert (
+            str(exc.value)
+            == "Invalid recordType value. Valid values include: 'b' (bib), "
+            "'i' (item), and 'j' (volume)."
+        )
+
+    @pytest.mark.http_code(200)
+    def test_patron_get_holds(self, mock_session, mock_session_response):
+        assert mock_session.patron_get_holds(id="12345678").status_code == 200
+
+    @pytest.mark.http_code(200)
+    def test_query_with_stale_token(self, mock_session, mock_session_response):
         mock_session.authorization.expires_on = datetime.datetime.now(
             datetime.timezone.utc
         ) - datetime.timedelta(0, 1)
