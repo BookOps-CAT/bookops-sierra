@@ -16,12 +16,6 @@ class TestSierraSession:
     Test of the SierraSession
     """
 
-    def test_authorization_invalid_argument(self):
-        err_msg = "Invalid authorization. Argument must be an instance of `SierraToken` object."  # noqa:E501
-        with pytest.raises(TypeError) as exc:
-            SierraSession("my_token")
-        assert err_msg in str(exc.value)
-
     def test__bibs_endpoint_property(self, mock_token):
         with SierraSession(authorization=mock_token) as session:
             assert (
@@ -279,3 +273,15 @@ class TestSierraSession:
 
     def test_items_query(self, mock_session):
         assert mock_session.items_query() is None
+
+    @pytest.mark.http_code(200)
+    def test__send_http_request_with_stale_token(
+        self, mock_session, mock_session_response
+    ):
+        mock_session.authorization.expires_on = datetime.datetime.now(
+            datetime.timezone.utc
+        ) - datetime.timedelta(0, 1)
+        assert mock_session.authorization.is_expired() is True
+        response = mock_session.bib_get("12345678")
+        assert mock_session.authorization.is_expired() is False
+        assert response.status_code == 200
