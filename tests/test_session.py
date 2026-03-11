@@ -48,19 +48,6 @@ class TestSierraSession:
         with SierraSession(authorization=mock_token, timeout=1.5) as session:
             assert session.timeout == 1.5
 
-    def test_delay_default(self, mock_token):
-        with SierraSession(authorization=mock_token) as session:
-            assert session.delay == 1
-
-    def test_delay_None(self, mock_token):
-        with SierraSession(authorization=mock_token, delay=None) as session:
-            assert session.delay is None
-
-    def test_delay_type_error(self, mock_token):
-        with pytest.raises(TypeError) as exc:
-            SierraSession(authorization=mock_token, delay="1")
-        assert str(exc.value) == "Expected int for `delay` param, got <class 'str'>."
-
     def test__fetch_new_token(self, mock_token):
         with SierraSession(authorization=mock_token) as session:
             assert session.authorization.is_expired() is False

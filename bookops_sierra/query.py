@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import sys
-import time
 from typing import TYPE_CHECKING
 
 from requests import PreparedRequest
@@ -50,10 +49,6 @@ class Query:
         """
         if not isinstance(prepared_request, PreparedRequest):
             raise TypeError("Invalid type for argument 'prepared_request'.")
-
-        # obey set delay between requests
-        if session.delay:
-            time.sleep(session.delay)
 
         # make sure access token is still valid and if not request a new one
         if session.authorization.is_expired():
