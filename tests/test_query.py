@@ -1,5 +1,4 @@
 import datetime
-import time
 from contextlib import nullcontext as does_not_raise
 
 import pytest
@@ -14,16 +13,6 @@ def test_query_not_prepared_request(mock_session):
         req = Request("GET", "https://foo.org")
         Query(mock_session, req, timeout=2)
     assert "Invalid type for argument 'prepared_request'." in str(exc.value)
-
-
-def test_query_delay(mock_session, mock_session_response):
-    mock_session.delay = 3
-    req = Request("GET", "https://foo.org")
-    prepped = mock_session.prepare_request(req)
-    start = time.time()
-    Query(mock_session, prepped)
-    end = time.time()
-    assert end - start >= mock_session.delay
 
 
 @pytest.mark.http_code(200)

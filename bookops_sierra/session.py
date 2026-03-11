@@ -23,9 +23,6 @@ class SierraSession(requests.Session):
         authorization:          authorization in form of the `SierraToken` instance
         timeout:                how long to wait for server to send data before
                                 giving up; default value is 5 seconds
-        delay:                  wait time between requests in the session in seconds,
-                                default 1 seconds (warning, longer delay causes server
-                                to reset the connection preventing keep-alive)
     Example:
 
     >>> from bookops_sierra import SierraSession
@@ -40,7 +37,6 @@ class SierraSession(requests.Session):
         self,
         authorization: SierraToken,
         timeout: int | float | tuple[int, int] | tuple[float, float] | None = (5, 5),
-        delay: int | None = 1,
     ) -> None:
         requests.Session.__init__(self)
 
@@ -59,11 +55,6 @@ class SierraSession(requests.Session):
 
         # set timeout
         self.timeout = timeout
-
-        # set delay between responses
-        if not isinstance(delay, int) and delay is not None:
-            raise TypeError(f"Expected int for `delay` param, got {type(delay)}.")
-        self.delay = delay
 
         # set session wide response content type
         self.headers.update({"Accept": "application/json"})
