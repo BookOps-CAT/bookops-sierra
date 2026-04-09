@@ -8,13 +8,15 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = ["requests (>=2.32.3, <3.0.0)", "types-requests (>=2.32.0.20241016, <3.0.0)"]
 
-[tool.poetry.group.dev.dependencies]
-pytest = "^8.3.4"
-pytest-mock = "^3.14.0"
-pytest-cov = "^6.0.0"
-black = "^24.10.0"
-mypy = "^1.14.1"
-flake8 = "^7.1.2"
+[dependency-groups]
+dev = [
+    "pytest>=8.3.4",
+    "pytest-mock>=3.14.0",
+    "pytest-cov>=6.0.0",
+    "black>=24.10.0",
+    "mypy>=1.14.1",
+    "flake8>=7.1.2",
+]
 
 [tool.black]
 line-length = 88
@@ -61,10 +63,3 @@ skip-magic-trailing-comma = true
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
-
-[dependency-groups]
-dev = [
-    "pytest>=8.3.4,<9",
-    "pytest-cov>=6.0.0,<7",
-    "pytest-mock>=3.14.0,<4"
-]
