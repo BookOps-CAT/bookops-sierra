@@ -1,23 +1,22 @@
-[tool.poetry]
+[project]
 name = "bookops-sierra"
-version = "0.1.0"
+version = "0.2.0"
 description = "Sierra API wrapper"
-authors = ["klinga <klingaroo@gmail.com>"]
+authors = [{name = "Tomasz Kalata", email = "klingaroo@gmail.com"}]
 license = "MIT"
 readme = "README.md"
+requires-python = ">=3.12"
+dependencies = ["requests (>=2.32.3, <3.0.0)", "types-requests (>=2.32.0.20241016, <3.0.0)"]
 
-[tool.poetry.dependencies]
-python = "^3.12"
-requests = "^2.32.3"
-
-[tool.poetry.group.dev.dependencies]
-pytest = "^8.3.4"
-pytest-mock = "^3.14.0"
-pytest-cov = "^6.0.0"
-black = "^24.10.0"
-mypy = "^1.14.1"
-types-requests = "^2.32.0.20241016"
-flake8 = "^7.1.2"
+[dependency-groups]
+dev = [
+    "pytest>=8.3.4",
+    "pytest-mock>=3.14.0",
+    "pytest-cov>=6.0.0",
+    "black>=24.10.0",
+    "mypy>=1.14.1",
+    "flake8>=7.1.2",
+]
 
 [tool.black]
 line-length = 88
@@ -47,10 +46,19 @@ markers = [
 	"webtest: mark a test hitting live endpoints",
     "http_code: use to pass returned http code to 'mock_session_response' fixture that mocks 'requests.Session.send' method"
 ]
+addopts = '-m "not webtest" --cov=bookops_sierra/'
 
 [tool.coverage.run]
+branch = true
 relative_files = true
 source = ["."]
+omit = ["tests/*"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E501", "ANN"]
+
+[tool.ruff.format]
+skip-magic-trailing-comma = true
 
 [build-system]
 requires = ["poetry-core"]

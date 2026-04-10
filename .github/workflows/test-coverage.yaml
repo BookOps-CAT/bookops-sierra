@@ -1,0 +1,51 @@
+name: test coverage
+on:
+  push:
+    branches:
+      - main
+      - "releases/**"      
+  pull_request:
+    branches:
+      - main
+      - "releases/**"      
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+        matrix:
+            python-version: ["3.12", "3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install poetry
+        run: pipx install poetry
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version}}
+
+      - name: Install dependencies
+        run: poetry install
+
+      - name: Run tests
+        run: poetry run pytest -v -m "not webtest" --cov=bookops_sierra/
+
+      - name: Send report to Coveralls
+        uses: coverallsapp/github-action@v2
+        with:
+          parallel: true
+          flag-name: Unit Test
+          github-token: ${{ secrets.GITHUB_TOKEN}}
+          fail-on-error: false
+
+  coveralls_finish:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Coveralls Finished
+        uses: coverallsapp/github-action@v2
+        with:
+          parallel-finished: true
+          fail-on-error: false

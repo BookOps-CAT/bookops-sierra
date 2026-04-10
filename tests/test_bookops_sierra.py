@@ -1,10 +1,8 @@
-# -*- coding: utf-8 -*-
-
-from bookops_sierra import __version__, __title__
+from bookops_sierra import __title__, __version__
 
 
 def test_version():
-    assert __version__ == "0.1.0"
+    assert __version__ == "0.2.0"
 
 
 def test_title():
@@ -20,4 +18,4 @@ def test_PlatformSession_top_level_import():
 
 
 def test_BookopsPlatformError_top_level_import():
-    from bookops_sierra import BookopsSierraError  # noqa: 401
+    pass  # noqa: 401

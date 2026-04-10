@@ -1,17 +1,15 @@
-# -*- coding: utf-8 -*-
-
 """
 bookops_nypl_platform.authorize
 ===============================
 This module provides method to authenticate subsequent requests to NYPL Platform
 by obtaining an access token used for authorization.
 """
+
 import datetime
 import sys
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any
 
 import requests
-
 
 from . import __title__, __version__
 from .errors import BookopsSierraError
@@ -42,29 +40,22 @@ class SierraToken:
         client_secret: str,
         host_url: str,
         api_version: str = "v6",
-        agent: Optional[str] = None,
-        timeout: Union[int, float, Tuple[int, int], Tuple[float, float], None] = (
-            3,
-            3,
-        ),
-    ):
+        agent: str | None = None,
+        timeout: int | float | tuple[int, int] | tuple[float, float] | None = (3, 3),
+    ) -> None:
         """Constructor"""
 
         if not all([client_id, client_secret, host_url, api_version]):
             raise BookopsSierraError("Missing Sierra authentication argument.")
 
-        self.token_str = None
-        self.expires_on = None
-        self.server_response = None
-        self.auth = (client_id, client_secret)
-        self.host_url = host_url
+        self.agent = agent if agent else f"{__title__}/{__version__}"
         self.api_version = api_version
+        self.auth: tuple[str, str] = (client_id, client_secret)
+        self.expires_on: datetime.datetime
+        self.host_url = host_url
+        self.server_response: requests.Response
         self.timeout = timeout
-
-        if agent is None:
-            self.agent = f"{__title__}/{__version__}"
-        else:
-            self.agent = agent
+        self.token_str: str
 
         # make access token request
         self._get_token()
@@ -76,7 +67,7 @@ class SierraToken:
     def _token_url(self) -> str:
         return f"{self.base_url}/token"
 
-    def _parse_access_token_string(self, server_response: Dict[str, Any]) -> str:
+    def _parse_access_token_string(self, server_response: dict[str, Any]) -> str:
         """
         Parsers access token string from auth_server response
 
@@ -95,7 +86,7 @@ class SierraToken:
             )
 
     def _calculate_expiration_time(
-        self, server_response: Dict[str, Any]
+        self, server_response: dict[str, Any]
     ) -> datetime.datetime:
         """
         Calculates access token expiration time based on it's life length
@@ -117,7 +108,7 @@ class SierraToken:
                 "Missing expires_in parameter in the server's response."
             )
 
-    def _get_token(self):
+    def _get_token(self) -> None:
         """
         Fetches Sierra API access token
         """
@@ -148,7 +139,7 @@ class SierraToken:
         except Exception:
             raise BookopsSierraError(f"Unexpected error occurred: {sys.exc_info()[0]}")
 
-    def is_expired(self):
+    def is_expired(self) -> bool:
         """
         Checks if the access token is expired
 
@@ -165,7 +156,7 @@ class SierraToken:
         else:
             return False
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             f"<token: {self.token_str}, "
             f"expires_on: {self.expires_on:%Y-%m-%d %H:%M:%S}, "

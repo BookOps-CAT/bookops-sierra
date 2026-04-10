@@ -1,19 +1,16 @@
-# -*- coding: utf-8 -*-
-
 """
 bookops_sierra.session
 =============================
 This module provides a session functionality used for making requests
 to Sierra API
 """
+
 import json
-from typing import Tuple, Union, Optional
 
 import requests
 
 from .authorize import SierraToken
 from .errors import BookopsSierraError
-from .query import Query
 
 
 class SierraSession(requests.Session):
@@ -25,9 +22,6 @@ class SierraSession(requests.Session):
         authorization:          authorization in form of the `SierraToken` instance
         timeout:                how long to wait for server to send data before
                                 giving up; default value is 5 seconds
-        delay:                  wait time between requests in the session in seconds,
-                                default 1 seconds (warning, longer delay causes server
-                                to reset the connection preventing keep-alive)
     Example:
 
     >>> from bookops_sierra import SierraSession
@@ -41,81 +35,72 @@ class SierraSession(requests.Session):
     def __init__(
         self,
         authorization: SierraToken,
-        timeout: Union[int, float, Tuple[int, int], Tuple[float, float], None] = (
-            5,
-            5,
-        ),
-        delay: Optional[int] = 1,
-    ):
+        timeout: int | float | tuple[int, int] | tuple[float, float] | None = (5, 5),
+    ) -> None:
         requests.Session.__init__(self)
 
         self.authorization = authorization
-        if not isinstance(self.authorization, SierraToken):
-            raise BookopsSierraError(
-                "Invalid authorization. Argument must be an instance of "
-                "`SierraToken` object."
-            )
-
-        self._bibs_endpoint = f"{self.authorization.base_url}/bibs/"
-        self._items_endpoint = f"{self.authorization.base_url}/items/"
-
-        # set agent for requests
-        self.headers.update({"User-Agent": self.authorization.agent})
-
-        # set timeout
         self.timeout = timeout
 
-        # set delay between responses
-        if not isinstance(delay, int) and delay is not None:
-            raise BookopsSierraError(
-                "Invalid type for argument 'delay'. Must be an integer."
-            )
-        self.delay = delay
+        self._bibs_endpoint = f"{self.authorization.base_url}/bibs"
+        self._items_endpoint = f"{self.authorization.base_url}/items"
+        self._patrons_endpoint = f"{self.authorization.base_url}/patrons"
 
-        # set session wide response content type
-        self.headers.update({"Accept": "application/json"})
+        # set agent for requests
+        self.headers.update(
+            {
+                "User-Agent": self.authorization.agent,
+                "Accept": "application/json",
+                "Authorization": f"Bearer {self.authorization.token_str}",
+            }
+        )
 
-        # set token bearer for the session
-        self._update_authorization()
-
-    def _fetch_new_token(self):
+    def _fetch_new_token(self) -> None:
         """
         Requests new access token from the oauth server and updates
         session headers with new authorization
         """
         try:
             self.authorization._get_token()
-            self._update_authorization()
+            self.headers.update(
+                {"Authorization": f"Bearer {self.authorization.token_str}"}
+            )
         except BookopsSierraError:
             raise
 
+    def _bib_endpoint(self, sid: str | int) -> str:
+        return f"{self._bibs_endpoint}/{sid}"
+
     def _bibs_marc_endpoint(self) -> str:
-        return f"{self._bibs_endpoint}marc"
+        return f"{self._bibs_endpoint}/marc"
 
     def _bibs_metadata_endpoint(self) -> str:
-        return f"{self._bibs_endpoint}metadata"
+        return f"{self._bibs_endpoint}/metadata"
 
     def _bibs_query_endpoint(self) -> str:
-        return f"{self._bibs_endpoint}query"
+        return f"{self._bibs_endpoint}/query"
 
     def _bibs_search_endpoint(self) -> str:
-        return f"{self._bibs_endpoint}search"
+        return f"{self._bibs_endpoint}/search"
 
-    def _bib_endpoint(self, sid: Union[str, int]) -> str:
-        return f"{self._bibs_endpoint}{sid}"
+    def _item_endpoint(self, sid: str | int) -> str:
+        return f"{self._items_endpoint}/{sid}"
 
     def _items_checkouts_endpoint(self) -> str:
-        return f"{self._items_endpoint}checkouts"
+        return f"{self._items_endpoint}/checkouts"
 
     def _items_query_endpoint(self) -> str:
-        return f"{self._items_endpoint}query"
+        return f"{self._items_endpoint}/query"
 
-    def _item_endpoint(self, sid: Union[str, int]) -> str:
-        return f"{self._items_endpoint}{sid}"
+    def _patron_holds_endpoint(self, id: str | int) -> str:
+        return f"{self._patrons_endpoint}/{id}/holds"
+
+    def _patron_holds_requests_endpoint(self, id: str | int) -> str:
+        return f"{self._patrons_endpoint}/{id}/holds/requests"
 
     def _prep_multi_keywords(
-        self, keywords: Union[str, list[str], list[int], None]
-    ) -> Optional[str]:
+        self, keywords: str | list[str] | list[int] | None
+    ) -> str | None:
         """
         Verifies or converts passed keywords into a comma separated string.
 
@@ -136,7 +121,7 @@ class SierraSession(requests.Session):
             return None
         return keywords
 
-    def _prep_sierra_number(self, sid: Union[str, int]) -> str:
+    def _prep_sierra_number(self, sid: str | int) -> str:
         """
         Verifies and formats Sierra bib numbers
 
@@ -146,30 +131,30 @@ class SierraSession(requests.Session):
         Returns:
             sid
         """
-        err_msg = "Invalid Sierra number passed."
+        err_msg = f"Invalid Sierra number passed: {sid}"
 
         if isinstance(sid, int):
             sid = str(sid)
         elif isinstance(sid, str):
             sid = sid.strip()
         else:
-            raise BookopsSierraError(err_msg)
+            raise ValueError(err_msg)
 
         if sid.lower()[0] in ("b", "i"):
             sid = sid[1:]
         if len(sid) == 8:
             if not sid.isdigit():
-                raise BookopsSierraError(err_msg)
+                raise ValueError(err_msg)
         elif len(sid) == 9:
             sid = sid[:8]
             if not sid.isdigit():
-                raise BookopsSierraError(err_msg)
+                raise ValueError(err_msg)
         else:
-            raise BookopsSierraError(err_msg)
+            raise ValueError(err_msg)
 
         return sid
 
-    def _prep_sierra_numbers(self, sids: Union[str, list[str], list[int], None]) -> str:
+    def _prep_sierra_numbers(self, sids: str | list[str] | list[int] | None) -> str:
         """
         Verifies or converts passed Sierra bib numbers into a comma separated string.
 
@@ -192,16 +177,28 @@ class SierraSession(requests.Session):
 
         return ",".join(verified_nos)
 
-    def _update_authorization(self):
+    def _send_http_request(
+        self,
+        prepared_request: requests.PreparedRequest,
+        timeout: int | float | tuple[int, int] | tuple[float, float] | None,
+    ) -> requests.Response:
         """
-        Updates Bearer token in SierraSession headers
+        Checks token and sends prepared request to web service.
         """
-        self.headers.update({"Authorization": f"Bearer {self.authorization.token_str}"})
+        if self.authorization.is_expired():
+            self._fetch_new_token()
+        return self.send(prepared_request, timeout=timeout)
+
+    def bib_create(self) -> None:
+        # POST /bibs/
+        pass
+
+    def bib_delete(self) -> None:
+        # DELETE /bibs/{id}
+        pass
 
     def bib_get(
-        self,
-        sid: Union[str, int],
-        fields: Optional[Union[str, list]] = None,
+        self, sid: str | int, fields: str | list | None = None
     ) -> requests.Response:
         """
         Retrieves specified fields of a Sierra bib.
@@ -224,12 +221,11 @@ class SierraSession(requests.Session):
         prepared_request = self.prepare_request(req)
 
         # send request
-        query = Query(self, prepared_request, timeout=self.timeout)
-
-        return query.response
+        response = self._send_http_request(prepared_request, timeout=self.timeout)
+        return response
 
     def bib_get_marc(
-        self, sid: Union[str, int], response_type: str = "application/marc-xml"
+        self, sid: str | int, response_type: str = "application/marc-xml"
     ) -> requests.Response:
         """
         Get MARC data for a single bib.
@@ -250,24 +246,16 @@ class SierraSession(requests.Session):
         prepared_request = self.prepare_request(req)
 
         # send request
-        query = Query(self, prepared_request, timeout=self.timeout)
-        return query.response
-
-    def bib_create(self):
-        # POST /bibs/
-        pass
-
-    def bib_delete(self):
-        # DELETE /bibs/{id}
-        pass
+        response = self._send_http_request(prepared_request, timeout=self.timeout)
+        return response
 
     def bib_update(
         self,
-        sid: Union[str, int],
-        data: Union[str, dict],
+        sid: str | int,
+        data: str | dict,
         data_format: str = "application/json",
         response_type: str = "application/json",
-    ):
+    ) -> requests.Response:
         """
         Update a Sierra bib. Please note, to avoid loosing data, provide the entire bib
         with modified elements in the `data` argument.
@@ -290,47 +278,52 @@ class SierraSession(requests.Session):
         elif isinstance(data, str) or isinstance(data, bytes):
             body = data
         else:
-            raise BookopsSierraError(
-                "Error. Given `data` argument is of a wrong type. "
-                "Must be a str or dict."
-            )
+            raise TypeError(f"Expected dict or str for `data` param, got {type(data)}.")
 
         # prep request
         req = requests.Request("PUT", url, data=body, headers=header)
         prepared_request = self.prepare_request(req)
 
         # send request
-        query = Query(self, prepared_request, timeout=self.timeout)
-        return query.response
+        response = self._send_http_request(prepared_request, timeout=self.timeout)
+        return response
 
-    def bibs_get(self):
-        # GET /bibs/
-        pass
-
-    def bibs_get_marc(self):
-        # GET /bibs/marc
-        pass
-
-    def bibs_get_metadata(self):
-        # GET /bibs/metadata
-        pass
-
-    def bibs_delete_marc_files(self):
+    def bibs_delete_marc_files(self) -> None:
         # DELETE /bibs/marc
         pass
 
-    def bibs_query(self):
+    def bibs_get(self) -> None:
+        # GET /bibs/
+        pass
+
+    def bibs_get_marc(self) -> None:
+        # GET /bibs/marc
+        pass
+
+    def bibs_get_metadata(self) -> None:
+        # GET /bibs/metadata
+        pass
+
+    def bibs_query(self) -> None:
         # POST /bibs/query
         pass
 
-    def bibs_search(self):
+    def bibs_search(self) -> None:
         # GET /bibs/search
+        pass
+
+    def item_create(self) -> None:
+        # POST /items/
+        pass
+
+    def item_delete(self) -> None:
+        # DELETE /items/{id}
         pass
 
     def item_get(
         self,
-        sid: Union[str, int],
-        fields: Optional[Union[str, list]] = None,
+        sid: str | int,
+        fields: str | list | None = None,
         response_type: str = "application/json",
     ) -> requests.Response:
         """
@@ -354,17 +347,40 @@ class SierraSession(requests.Session):
         prepared_request = self.prepare_request(req)
 
         # send request
-        query = Query(self, prepared_request, timeout=self.timeout)
-        return query.response
+        response = self._send_http_request(prepared_request, timeout=self.timeout)
+        return response
 
-    def item_delete(self):
-        # DELETE /items/{id}
-        pass
+    def item_get_checkouts(
+        self, sid: str, response_type: str = "application/json"
+    ) -> requests.Response:
+        """
+        Gets checkouts for an item record by item ID.
+        Uses GET /items/{id}/checkouts
+        Args:
+            sid:
+                the item ID for the record
+            response_type:
+                choice of application/json or application/xml
+
+        Returns:
+            requests.Response instance
+        """
+        prepped_sid = self._prep_sierra_number(sid)
+        url = f"{self._item_endpoint(prepped_sid)}/checkouts"
+        header = {"Accept": response_type}
+
+        # prep request
+        req = requests.Request("GET", url, headers=header)
+        prepared_request = self.prepare_request(req)
+
+        # send request
+        response = self._send_http_request(prepared_request, timeout=self.timeout)
+        return response
 
     def item_update(
         self,
-        sid: Union[str, int],
-        data: Union[str, dict],
+        sid: str | int,
+        data: str | dict,
         data_format: str = "application/json",
         response_type: str = "application/json",
     ) -> requests.Response:
@@ -388,44 +404,37 @@ class SierraSession(requests.Session):
         elif isinstance(data, str):
             body = data
         else:
-            raise BookopsSierraError(
-                "Error. Given `data` argument is of a wrong type. "
-                "Must be a str or dict."
-            )
+            raise TypeError(f"Expected dict or str for `data` param, got {type(data)}.")
 
         # prep request
         req = requests.Request("PUT", url, data=body, headers=header)
         prepared_request = self.prepare_request(req)
 
         # send request
-        query = Query(self, prepared_request, timeout=self.timeout)
-        return query.response
+        response = self._send_http_request(prepared_request, timeout=self.timeout)
+        return response
 
-    def item_create(self):
-        # POST /items/
-        pass
-
-    def item_get_checkouts(self):
-        # GET /items/{id}/checkouts
+    def items_checkin(self) -> None:
+        # DELETE /items/checkouts/{barcode}
         pass
 
     def items_get(
         self,
-        sids: Union[str, list[str], list[int], None] = None,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None,
-        fields: Optional[Union[str, list[str]]] = None,
-        createdDate: Optional[str] = None,
-        updatedDate: Optional[str] = None,
-        deletedDate: Optional[str] = None,
-        deleted: Optional[bool] = False,
-        bibIds: Optional[Union[str, list[str], list[int]]] = None,
-        status: Optional[str] = None,
-        duedate: Optional[str] = None,
-        suppressed: Optional[str] = None,
-        locations: Optional[str] = None,
-        response_type="application/json",
-    ):
+        sids: str | list[str] | list[int] | None = None,
+        limit: int | None = None,
+        offset: int | None = None,
+        fields: str | list[str] | None = None,
+        createdDate: str | None = None,
+        updatedDate: str | None = None,
+        deletedDate: str | None = None,
+        deleted: bool | None = False,
+        bibIds: str | list[str] | list[int] | None = None,
+        status: str | None = None,
+        duedate: str | None = None,
+        suppressed: str | None = None,
+        locations: str | None = None,
+        response_type: str = "application/json",
+    ) -> requests.Response:
         """
         Retrieves a list of Sierra items of given item numbers.
         Uses GET /items/ endpoint.
@@ -475,18 +484,96 @@ class SierraSession(requests.Session):
         prepared_request = self.prepare_request(req)
 
         # send request
-        query = Query(self, prepared_request, timeout=self.timeout)
+        response = self._send_http_request(prepared_request, timeout=self.timeout)
+        return response
 
-        return query.response
-
-    def items_get_checkouts(self):
+    def items_get_checkouts(self) -> None:
         # GET /items/checkouts
         pass
 
-    def items_checkin(self):
-        # DELETE /items/checkouts/{barcode}
-        pass
-
-    def items_query(self):
+    def items_query(self) -> None:
         # POST /items/query
         pass
+
+    def patron_create_hold_request(
+        self,
+        id: int,
+        pickupLocation: str,
+        recordNumber: int,
+        recordType: str,
+        response_type: str = "application/json",
+    ) -> requests.Response:
+        """
+        Create a new hold request for a patron.
+        Uses POST /patrons/{id}/holds/requests endpoint.
+
+        Args:
+            id:
+                the patron ID
+            pickupLocation:
+                the pickup location code
+            recordNumber:
+                the ID for the record on which to place the hold
+            recordType:
+                the record type code, i.e. bib ('b'), item ('i'), or volume ('j')
+            response_type:
+                choice of application/json or application/xml
+
+        Returns:
+            requests.Response instance
+        """
+        url = f"{self._patron_holds_requests_endpoint(id)}"
+        header = {"Accept": response_type}
+        if recordType not in ["b", "i", "j"]:
+            raise ValueError(
+                "Invalid recordType value. Valid values include: 'b' (bib), "
+                "'i' (item), and 'j' (volume)."
+            )
+        payload = {
+            "recordType": recordType,
+            "pickupLocation": pickupLocation,
+            "recordNumber": recordNumber,
+        }
+
+        # prep request
+        req = requests.Request("POST", url, json=payload, headers=header)
+        prepared_request = self.prepare_request(req)
+
+        # send request
+        response = self._send_http_request(prepared_request, timeout=self.timeout)
+        return response
+
+    def patron_get_holds(
+        self,
+        id: str,
+        limit: int | None = 50,
+        offset: int | None = 0,
+        response_type: str = "application/json",
+    ) -> requests.Response:
+        """
+        Gets holds data for a single patron record.
+        Uses GET /patrons/{id}/holds endpoint.
+
+        Args:
+            id:
+                the patron ID
+            limit:
+                total number of checkout records to return
+            offset:
+                the first record (zero-indexed) of the result set to return
+            response_type:
+                choice of application/json or application/xml
+
+        Returns:
+            requests.Response instance
+        """
+        url = f"{self._patron_holds_endpoint(id)}"
+        header = {"Accept": response_type}
+        payload = {"limit": limit, "offset": offset}
+        # prep request
+        req = requests.Request("GET", url, params=payload, headers=header)
+        prepared_request = self.prepare_request(req)
+
+        # send request
+        response = self._send_http_request(prepared_request, timeout=self.timeout)
+        return response

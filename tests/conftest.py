@@ -1,15 +1,12 @@
-# -*- coding: utf-8 -*-
-
 import datetime
-import os
 import json
+import os
 from typing import Generator
 
 import pytest
 import requests
 
-
-from bookops_sierra import SierraToken, SierraSession
+from bookops_sierra import SierraSession, SierraToken
 from bookops_sierra.errors import BookopsSierraError
 
 
@@ -145,7 +142,7 @@ def mock_datetime_now(monkeypatch):
 
 @pytest.fixture
 def mock_session(mock_token) -> Generator[SierraSession, None, None]:
-    with SierraSession(authorization=mock_token, delay=None) as session:
+    with SierraSession(authorization=mock_token) as session:
         yield session
 
 
