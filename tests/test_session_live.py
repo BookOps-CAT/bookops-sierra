@@ -1,7 +1,5 @@
 import pytest
 
-from bookops_sierra.errors import BookopsSierraError
-
 
 class TestSierraSessionLive:
     """
