@@ -34,10 +34,8 @@ class TestSierraSessionLive:
 
     @pytest.mark.webtest
     def test_bib_get_404_error(self, live_session):
-        with pytest.raises(BookopsSierraError) as exc:
-            live_session.bib_get("92345678")
-        assert "404 Client Error" in str(exc.value)
-        print(str(exc.value))
+        res = live_session.bib_get("92345678")
+        assert res.status_code == 404
 
     @pytest.mark.webtest
     def test_bib_get_default_response_content_marc_xml(self, live_session):
