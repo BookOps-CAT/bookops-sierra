@@ -50,6 +50,16 @@ class TestSierraSessionLive:
             out.write(res.content)
 
     @pytest.mark.webtest
+    def test_bibs_query(self, live_session):
+        json = {
+            "target": {"record": {"type": "bib"}, "id": 30},
+            "expr": {"op": "equals", "operands": ["8", ""]},
+        }
+        res = live_session.bibs_query(query=json)
+        assert res.status_code == 200
+        assert len(res.json()["entries"]) == 50
+
+    @pytest.mark.webtest
     def test_item_get_success_default_fields(self, live_session):
         res = live_session.item_get("i389995009")
         assert res.status_code == 200

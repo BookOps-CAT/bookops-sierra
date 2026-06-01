@@ -6,6 +6,7 @@ to Sierra API
 """
 
 import json
+from typing import Any
 
 import requests
 
@@ -304,9 +305,43 @@ class SierraSession(requests.Session):
         # GET /bibs/metadata
         pass
 
-    def bibs_query(self) -> None:
-        # POST /bibs/query
-        pass
+    def bibs_query(
+        self,
+        query: dict[str, Any],
+        limit: int | None = 50,
+        offset: int | None = 0,
+        response_type: str = "application/json",
+    ) -> requests.Response:
+        """
+        Search for bib records using JSON query format.
+        Uses POST /bibs/query endpoint.
+
+        Args:
+            json:
+                JSON query to be used
+            limit:
+                maximum number of results
+            offset:
+                the beginning record (zero-indexed) of the result set
+            response_type:
+                response content format, application/json or application/xml
+
+        Returns:
+            requests.Response instance
+        """
+        url = self._bibs_query_endpoint()
+        header = {"Accept": response_type}
+        query_str = json.dumps(query)
+        payload = {"limit": limit, "offset": offset}
+        # prep request
+        req = requests.Request(
+            "POST", url, data=query_str, params=payload, headers=header
+        )
+        prepared_request = self.prepare_request(req)
+
+        # send request
+        response = self._send_http_request(prepared_request, timeout=self.timeout)
+        return response
 
     def bibs_search(self) -> None:
         # GET /bibs/search

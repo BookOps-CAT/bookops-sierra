@@ -250,8 +250,13 @@ class TestSierraSession:
     def test_bibs_get_metadata(self, mock_session):
         assert mock_session.bibs_get_metadata() is None
 
-    def test_bibs_query(self, mock_session):
-        assert mock_session.bibs_query() is None
+    @pytest.mark.http_code(200)
+    def test_bibs_query(self, mock_session, mock_session_response):
+        json = {
+            "target": {"record": {"type": "bib"}, "field": {"tag": "t"}},
+            "expr": {"op": "equals", "operands": ["moby dick"]},
+        }
+        assert mock_session.bibs_query(query=json).status_code == 200
 
     def test_bibs_search(self, mock_session):
         assert mock_session.bibs_search() is None
