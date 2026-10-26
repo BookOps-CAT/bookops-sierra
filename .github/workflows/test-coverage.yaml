@@ -14,23 +14,15 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
         matrix:
-            python-version: ["3.12", "3.13", "3.14"]
+            python-version: ["3.12", "3.13", "3.14", "3.15"]
     steps:
       - uses: actions/checkout@v6
-
-      - name: Install poetry
-        run: pipx install poetry
-
-      - name: Set up Python
-        uses: actions/setup-python@v6
+      - name: Install uv and set python version
+        uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e
         with:
-          python-version: ${{ matrix.python-version}}
-
-      - name: Install dependencies
-        run: poetry install
-
-      - name: Run tests
-        run: poetry run pytest -v -m "not webtest" --cov=bookops_sierra/
+          python-version: ${{ matrix.python-version }}
+      - name: Run tests with python ${{ matrix.python-version }}
+        run: uv run --frozen pytest -m "not webtest" --cov=bookops_sierra/
 
       - name: Send report to Coveralls
         uses: coverallsapp/github-action@v2

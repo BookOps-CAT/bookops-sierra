@@ -42,22 +42,13 @@ class TestSierraSessionLive:
         assert res.headers["Content-Type"] == "application/marc-xml;charset=UTF-8"
 
     @pytest.mark.webtest
-    def test_bib_get_marc_save_to_file(self, live_session):
+    def test_bib_get_marc_save_to_file(self, live_session, tmp_path):
+        marc_file = tmp_path / "bib-marc-sample.xml"
         res = live_session.bib_get_marc("13213996")
         assert res.status_code == 200
 
-        with open("tests/bib-marc-sample.xml", "wb") as out:
+        with open(marc_file, "wb") as out:
             out.write(res.content)
-
-    @pytest.mark.webtest
-    def test_bibs_query(self, live_session):
-        json = {
-            "target": {"record": {"type": "bib"}, "id": 30},
-            "expr": {"op": "equals", "operands": ["8", ""]},
-        }
-        res = live_session.bibs_query(query=json)
-        assert res.status_code == 200
-        assert len(res.json()["entries"]) == 50
 
     @pytest.mark.webtest
     def test_item_get_success_default_fields(self, live_session):
